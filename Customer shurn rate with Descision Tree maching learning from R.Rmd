@@ -1,0 +1,376 @@
+---
+title: "HR Analysis"
+author: "Ope"
+date: "7/28/2021"
+output: html_document
+---
+
+#Step
+1 - Define Problem
+2 - Understanding the Data is important
+3 - Data preparation : Include Data Cleaning, Data wrangling(taking care of missing value incae you have),
+4-  Model our Data
+5 - Model our Evaluation
+6- Interprete your data and make
+
+#  stp 1 load your library
+```{r}
+#library(plyr)
+
+library(dplyr)
+```
+# import the data what ever the name is
+```{r}
+data = read.csv("HR Dataset.csv")
+head(data)
+```
+# Data  Wrangling - check if there is a missing value
+```{r}
+sum(is.null(data))
+```
+#just given it a new name nothing special
+
+
+```{r}
+MYdataset =  data #copy from my data to mydataset
+MYdataset
+```
+
+
+#
+count no of rows and column
+```{r}
+nrow(MYdataset)
+ncol(MYdataset)
+```
+
+
+
+```{r}
+summary(MYdataset)
+```
+
+
+Earlier we  had indicated that we had both active records at the end of year and terminates during the year for each of 10 years going fro 2006  to 2015. To have a popultion to model from (to different ACTIVES FROM TERMINATES) we have to include both  status types.
+
+Its useful then to get a baseline of what percent/Proportion the terminate are of the entire  population. It also answers our first question. LetS look at that next.
+
+
+ what proportion of our staff are leaving
+
+```{r}
+names(MYdataset)
+```
+
+
+```{r}
+statuscount <- as.data.frame.matrix(MYdataset) %>%
+  group_by(STATUS_YEAR) %>%
+  select( STATUS_YEAR,STATUS_YEAR, STATUS) %>%
+  table()
+ 
+
+  
+statuscount  
+```
+  
+  
+ 
+ 
+ 
+ ```{r}
+library(magrittr)
+library(rattle)
+library(caret)
+```
+
+
+```{r}
+names(statuscount)
+```
+```{r}
+names(MYdataset)
+```
+
+```{r}
+statusc <- as.data.frame.matrix(MYdataset %>%
+  group_by(STATUS_YEAR) %>%
+  select(STATUS_YEAR,STATUS)%>%
+  table())
+  
+statusc
+```
+
+
+
+
+```{r}
+statuscounts <-as.data.frame.matrix( MYdataset %>%
+  group_by(STATUS_YEAR) %>%
+  select( STATUS_YEAR,STATUS_YEAR, STATUS) %>%
+  table())
+ 
+ statuscounts <- statuscounts %>%
+  mutate(Total = ACTIVE + TERMINATED,
+         Percenterminate = TERMINATED/(Total)*100)
+
+statuscounts
+
+```
+
+
+```{r}
+ statuscounts <-as.data.frame.matrix(statuscounts) %>%
+  mutate(Total = ACTIVE + TERMINATED,
+         Percenterminate = TERMINATED/(Total)*100)
+
+statuscounts
+```
+
+
+
+```{r}
+view(MYdataset)
+```
+
+
+```{r}
+library(ggplot2)
+library(plotly)
+int <- ggplot() + geom_bar(aes(y = ..count.., x = as.factor(BUSINESS_UNIT), fill = as.factor(STATUS)), data = MYdataset, position = position_dodge())
+
+ggplotly(int, tooltip = "y")
+
+```
+
+_job Termination findings according to termination type and status year _
+
+```{r}
+Job_Termination = as.data.frame(MYdataset %>%
+                                  filter(STATUS == "TERMINATED"))#filter out
+
+ggplot() + geom_bar(aes(y =  ..count..,x = as.factor(STATUS_YEAR),fill =  as.factor(termtype_desc)),data = Job_Termination, position = position_stack())
+```
+_Explanation_
+Generally most terminations seems to be volountry year by year, except in the most recent year where is are some involountry termination
+```{r}
+library(hrbrthemes)
+```
+
+
+```{r}
+?rnorm
+```
+
+
+
+```{r}
+
+
+Data_analysts = c(rep("Ayomide", 3), rep("Timi", 3), rep("AKin", 3), rep("Ope", 3))
+
+Data_analysts
+```
+
+```{r}
+
+
+
+Skills = rep(c("Excel", "R", "Power Bi"), 4)
+Skills
+```
+```{r}
+
+
+Scores = abs(rnorm(12, 0, 15))
+Scores
+```                                                       
+```{r}
+
+
+data <- as.data.frame(Data_analysts, Skills, Scores)
+data
+```
+#grouped
+
+```{r}
+
+
+p = ggplot(data, aes(fill = Skills, y = Scores, x = Data_analysts)) + geom_bar(position = "dodge", stat = "identity")
+
+ggplotly(p, tooltip = "Scores")
+
+
+
+```
+```{r}
+?..count..
+```
+
+
+
+_Employees that left according to Status Year and Termination Reason_
+
+
+```{r}
+R <- ggplot() + geom_bar(aes(y = ..count.., x = as.factor(STATUS_YEAR), fill = as.factor(termreason_desc)), data = Job_Termination, position = position_stack())
+
+ggplotly(R, tooltip = "y")
+
+```
+
+```{r}
+ggplot() + geom_bar(aes(y = ..count..,x =as.factor(department_name), fill = as.factor(termreason_desc)), data= Job_Termination, position = position_stack())+
+  theme(axis.text.x=element_text(angle=90, hjust = 1, vjust = 0.5))
+```
+```{r}
+x = MYdataset[,6:7]
+x
+```
+
+```{r}
+subset(MYdataset[3:9])
+```
+
+```{r}
+y=data.frame(MYdataset$birthdate_key, MYdataset$length_of_service)
+y
+```
+# Step 3
+
+Remember we have 10 years of historical data. We will use the first 9 to train the model, and the model, and the 10th year to test it. . Moreover, We will use 10 fold cross validation on the training data as well. so before we actually try out a variety of modelling algorithm, we need to partition the data into training and testing dataset
+
+
+## Let's Partition the data
+
+
+```{r}
+library(rattle)#A free graphical interface for data mining in r
+library(magrittr)# For the %>% and %<>% operators
+library(caret)
+library(lattice)
+
+```
+# IT should  be mentioned again that for building ,models, We never want to use all our data to build a  model.this lead to overfitting, where it might be able to predict well on current data that it sees as it build on, but may not predict well  on data that it's hasnt seen.
+
+
+
+#magritrr - Package 
+
+
+%>% pipe for passing function
+
+
+
+```{r}
+iris %>%
+  subset(Sepal.Length > mean(Sepal.Length))
+```
+
+```{r}
+building <- TRUE
+  building
+
+
+scoring <- !building
+  scoring
+
+crv$seed <-  42
+    crv$seed    #in machine learning a pre-define value is used to reset
+
+```
+
+#Lets start doing traing test split
+# meaning we are going to split the ddata
+
+
+
+```{r}
+set.seed(crv$seed) # setting the seed so everyone can have same result
+
+MYnobs <- nrow(data)
+
+```
+
+
+```{r}
+rattle() 
+```
+
+```{r}
+NO_OF_OBSERVATION = nrow(MYdataset)
+
+NO_OF_OBSERVATION
+```
+```{r}
+#creating training and testing dataset
+ set.seed(crv$seed) #setting the seed so that all the result can be the same result
+ MYnobs <- nrow(MYdataset) #49653 observation
+ 
+ #Lets filter out only  2014 for training
+ Mysample <- Mytrain <- subset(MYdataset, STATUS_YEAR <= 2014)
+ 
+ Myvalidate = NULL
+ Mytest  = subset(MYdataset, STATUS_YEAR == 2015) #2015 will be used for testing
+ 
+ Myinput <- c("age", "length_of_service","gender_full","STATUS_YEAR","BUSINESS_UNIT")
+ 
+ #These are my variable selection have been willing to use as predictors
+ Mynumeric <- c("age", "length_of_service","STATUS_OF_YEAR")
+ Mycategoric <- c("gender_full", "BUISNESS_UNIT")
+ 
+ MyTARGET <- "STATUS" #na this column i wan predict
+ 
+ Myrisk <- NULL
+ 
+ Myident <- "EmployeeID"
+ 
+ Myignore <- c("recorddate_key", "birthdate_key", "orighiredate_key","terminationdate_key", "gender_short", "termtype_desc", "department_name", "job_title", "store_name", "BUSINESS_UNIT")
+ 
+ Myweights <- NULL
+ 
+ MYTrainingData = Mytrain[c(Myinput, MyTARGET)]
+ MyTestingData = Mytest[c(Myinput, MYTARGET)]
+```
+```{r}
+names(MYdataset)
+```
+
+
+```{r}
+nrow(MYTrainingdata)
+nrow(MyTestingData)
+```
+
+
+```{r}
+# These are my variable selection have 
+```
+
+
+```{r}
+training_2016_2014 <- Mytrain <- subset()
+```
+
+#Time to split the data into 2 part , one is train.csv and the other is test.csv
+
+-train.csv is used as training model
+
+- test.csv will be use to test how model is able to classify who is leaving or staying
+
+```{r}
+training_2006_2014 = MYtrain = subset(data, STATUS_YEAR <= 2014)
+
+
+for_testing_2015 = subset(data, STATUS_YEAR == 2015)
+
+head(training_2006_2014)
+nrow(training_2006_2014)
+nrow(for_testing_2015)
+
+#now wxport them to csv
+write.csv(for_testing_2015, 'testing data.csv')
+write.csv(training_2006_2014, 'train data.csv')
+```
+
+

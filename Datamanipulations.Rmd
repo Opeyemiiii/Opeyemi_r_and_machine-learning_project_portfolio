@@ -1,0 +1,129 @@
+---
+title: "RoughPractice5"
+author: "Ope"
+date: "7/21/2021"
+output: html_document
+---
+
+```{r}
+getwd()
+
+```
+```{r}
+library(dplyr)
+library(tidyverse)
+library(readr)
+library(flexdashboard)
+library(ggplot2)
+library(highcharter)
+library(tidyselect)
+```
+
+
+
+```{r}
+data("starwars")
+head(starwars)
+```
+
+
+```{r}
+data.frame(starwars)
+```
+```{r}
+train <- read.csv('train.csv')
+```
+
+
+```{r}
+data.frame(train)
+```
+
+```{r}
+str(train) %>% 
+  na.omit(train)
+```
+
+
+```{r}
+data.frame(train)
+```
+
+```{r}
+na.omit(train)
+```
+
+
+```{r}
+str(train)
+```
+
+
+```{r}
+data.frame(train)
+```
+
+```{r}
+str(train)
+```
+
+
+```{r}
+train$pclass = factor(train$pclass, labels = c("1st", "2nd", "3rd"))
+
+str(train)
+```
+
+
+
+```{r}
+data.frame(starwars)
+
+```
+
+```{r}
+sw <- starwars %>%
+  select(name, height, mass,gender) %>%
+  rename(weight = mass) %>%
+  mutate(height = height/100) %>%
+  na.omit(sw) %>%
+  filter(gender == "feminine" |
+           gender == "masculine") %>%
+  mutate(BMI = weight/height^2) %>%
+  mutate(gender = recode(gender, feminine = "f" )) %>%
+  mutate(gender = recode(gender, masculine =  "m")) %>%
+  group_by(name) %>%
+  summarise(averge_BMI = mean(BMI))
+
+  
+  
+sw
+  
+  
+```
+
+
+
+```{r}
+sw
+```
+ 
+```{r}
+tr <-  train
+data.frame(tr)
+summary(tr)
+tr
+```
+```{r}
+subset(tr[1:899, 2:4])
+
+```
+```{r}
+str(tr)
+```
+
+```{r}
+starwars <- unlist(lapply(starwars, is.numeric))
+starwars
+```
+

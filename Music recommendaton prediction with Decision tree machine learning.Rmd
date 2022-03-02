@@ -1,0 +1,129 @@
+---
+title: "MUSIC"
+author: "Ope"
+date: "1/31/2022"
+output: html_document
+---
+
+```{r}
+getwd()
+```
+```{r}
+library(dplyr)
+library(tidyverse)
+library(rpart)
+library(rpart.plot)
+library(ggplot2)
+library(caTools)
+```
+
+
+```{r}
+data <- read.csv("music.csv")
+
+data
+```
+
+```{r}
+str(data)
+```
+```{r}
+dim(data)
+```
+```{r}
+n_distinct(data$genre)
+```
+
+```{r}
+unique(data$genre)
+```
+```{r}
+colSums(is.na(data))
+```
+```{r}
+data$genre <- factor(data$genre, labels = c("Acoustic", "Classical", "Dance", "HipHop", "Jazz"))
+str(data)
+```
+```{r}
+data
+```
+```{r}
+sum(data$genre == "Acoustic")
+sum(data$genre == "Classical")
+sum(data$genre == "Dance")
+sum(data$genre == "HipHop")
+sum(data$genre == "Jazz")
+```
+
+```{r}
+countdata <- data %>% 
+  group_by(genre)%>%
+  summarise(genre.count = n()) %>%
+  rename("Count_Of_Genre" = genre.count)%>%
+  arrange(desc(Count_Of_Genre))
+countdata
+```
+```{r}
+ggplot(countdata, aes(genre, Count_Of_Genre))+
+  geom_col(aes(reorder(genre, -Count_Of_Genre), Count_Of_Genre, fill = genre))+
+  theme_classic()+
+  labs(title = "Ranking the genre of Music",
+       x = "genre of music",
+       y = "count of genre of music",
+       caption = "#IBAN #DataScience #BuisnessIntelligence MachineLearning")+
+  theme(axis.text.x = element_text( hjust = 0.5, size =8),
+        plot.caption = element_text(hjust = 1.5))
+
+```
+```{r}
+sample = sample.split(data$genre, SplitRatio = 0.80)
+```
+
+```{r}
+train = subset(data, sample == TRUE)
+test = subset(data, sample == FALSE)
+```
+
+```{r}
+model <- rpart(genre ~ ., train)       
+model
+```
+
+```{r}
+rpart.plot(model, extra =  101, type =  3, box.palette = "blue")
+```
+```{r}
+m = c(21, 1)
+f = c(22, 0)
+```
+
+```{r}
+newdata = data.frame( age = c(21, 22),
+                    gender = c(1, 0))
+newdata
+```
+
+
+
+```{r}
+predict <- predict(model, test[-3], type = "class" )
+predict
+```
+
+```{r}
+confusion_Metrics = table(test[,3], predict)
+confusion_Metrics
+```
+
+
+
+
+
+
+
+
+
+
+
+
+

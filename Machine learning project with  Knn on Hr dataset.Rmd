@@ -1,0 +1,98 @@
+---
+title: "Knn Prdiction using Hrdataset"
+author: "Ope"
+date: "11/5/2021"
+output: html_document
+---
+
+```{r}
+
+Hrdata <- read.csv("HR Dataset.csv")
+```
+
+```{r}
+str(Hrdata)
+```
+
+```{r}
+names(Hrdata)
+```
+```{r}
+sapply(Hrdata, class)
+```
+
+```{r}
+ColSums(is.na(Hrdata))
+```
+
+```{r}
+colSums(is.na(Hrdata))
+```
+
+```{r}
+dim(Hrdata)
+```
+
+```{r}
+head(Hrdata)
+```
+
+```{r}
+library(class)
+```
+
+
+```{r}
+Hrdata <- transform(Hrdata, STATUS = as.factor(STATUS))
+Hrdata
+```
+
+```{r}
+Mydata <- Hrdata[,-19]
+Mydata
+```
+```{r}
+dim(Mydata)
+```
+
+```{r}
+sample = sample.split(data$STATUS, SplitRatio =  .70)
+```
+
+```{r}
+library(caTools)
+```
+
+```{r}
+train <- subset(Mydata, sample == TRUE)
+
+dim(train)
+```
+```{r}
+test <- subset(Mydata, sample == FALSE)
+
+dim(test)
+```
+
+```{r}
+ml = knn(train[,-17], test[,-17], train$STATUS, k = 5)
+ml
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

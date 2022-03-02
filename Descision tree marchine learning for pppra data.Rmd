@@ -1,0 +1,164 @@
+---
+title: "Marchine Learning using PPPA Data"
+author: "Ope"
+date: "9/10/2021"
+output: html_document
+---
+
+```{r}
+data <- read.csv("PPraFile.csv")
+head(data)
+```
+
+```{r}
+library(readxl)
+PPraFile <- read_excel("PPraFile.csv")
+head(PPraFile)
+```
+
+
+
+```{r}
+dim(PPraFile)
+```
+
+
+```{r}
+colSums(is.na(PPraFile))
+```
+
+
+```{r}
+library(dplyr)
+library(tidyverse)
+```
+
+```{r}
+clean_data <- drop_na(PPraFile)
+```
+
+
+```{r}
+colSums(is.na(clean_data))
+```
+
+
+```{r}
+str(clean_data)
+```
+
+
+```{r}
+unique(clean_data$Month)
+```
+
+
+```{r}
+unique(clean_data$Year)
+```
+
+
+```{r}
+trainingdata <- clean_data %>%
+  filter(Month == "January" | 
+           Month == "February" | 
+           Month == "March") %>%
+  rename(Truckout_distribution = "Truckout distribution" , 
+         Destination_state = "Destination state" ,
+         Truck_number = "Truck number" ,
+         Quantity_loaded = "Quantity loaded")
+
+trainingdata
+```
+
+
+```{r}
+
+```
+
+```{r}
+dim(clean_data)
+```
+
+
+```{r}
+
+testingdata <- clean_data %>%
+  filter( Month == "April") %>%
+  rename( Truckout_distribution = "Truckout distribution",
+         Destination_state = "Destination state", 
+          Truck_number = "Truck number" ,
+         Quantity_loaded = "Quantity loaded")
+testingdata
+```
+
+
+
+
+
+```{r}
+sum(test$Truckout_distribution == "Local")
+```
+
+
+```{r}
+test <- test %>%
+  group_by(Year) %>%
+
+count(Truckout_distribution, sort = TRUE)
+test
+```
+
+
+
+
+```{r}
+dim(testingdata)
+```
+
+
+```{r}
+colSums(is.na(trainingdata))
+
+colSums(is.na(testingdata))
+```
+
+```{r}
+library(rpart)
+library(rpart.plot)
+
+```
+
+```{r}
+g = rpart( Truckout_distribution ~ Quantity_loaded       , trainingdata )
+g
+```
+
+
+```{r}
+rpart.plot(g, extra =  101, type =  5)
+```
+
+
+```{r}
+
+m <- predict(g, testingdata, type = "class" )
+m
+
+```
+ 
+```{r}
+table(m)
+
+```
+
+
+```{r}
+table(testingdata$Truckout_distribution)
+```
+
+
+
+table( test[ , 5] , model2)
+ 
+

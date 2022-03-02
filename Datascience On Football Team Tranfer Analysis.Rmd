@@ -1,0 +1,358 @@
+---
+title: "Football Analysis"
+author: "Ope"
+date: "8/24/2021"
+output: html_document
+---
+#The note is a submission on a task for the most expensive football transfer
+
+```{r}
+library(tidyverse)
+library(janitor)
+library(ggthemes)
+library(hrbrthemes)
+library(RColorBrewer)
+```
+#Reading and viewing the dataset
+
+```{r}
+data <- read.csv("football_players.csv")
+head(data)
+```
+#Filtering the data and rename
+
+```{r}
+data2 <- data %>% 
+  select(Rank, Player, From.Club., To.Club.,Origin, Position, Fee.â...mln., Year) %>% 
+
+  rename("From_Club"= "From.Club.", "To_Club" = "To.Club.","Fee_Euro_mln" = "Fee.â...mln.")
+
+
+head(data2)
+```
+#Number of clubs with atleast one expensive  transfer
+
+```{r}
+club_d <- n_distinct(data2$`To_Club`)
+club_d
+
+#SIXTEEN CLUBS have bought a player for a record fee during the time period 2000 -2021
+```
+
+
+
+
+```{r}
+view(data2)
+```
+
+   #Names of the club with atleast one expensive transfer
+   
+```{r}
+club_names <- data.frame( unique(data2$`To_Club`)) %>% 
+  rename("Club with atleast one expensive player" = "unique.data2.To_Club.")
+club_names
+```
+#Identifying the transfer time period
+
+```{r}
+data3 <- data2 %>% 
+  
+   summarise(Min_yr= min(Year), Max_yr = max(Year))
+data3
+ #Data shows that recordfee took place with the span of 2000 to 2021
+```
+   #Clubs And There Total Spending Between 2000 - 2021_Spending_in_Euro_mln
+```{r}
+club_tot <- data2 %>% 
+ 
+  group_by(To_Club)%>% 
+  summarise( Total_Spending = sum(Fee_Euro_mln)) %>%
+  arrange(desc(Total_Spending))
+  
+club_tot
+```
+
+
+```{r}
+names(data2)
+```
+```{r}
+nb.cols <- 16
+mycolors <- colorRampPalette(brewer.pal (8,"Pastel1"))(nb.cols)
+nb.cols
+mycolors 
+```
+  
+
+```{r}
+
+
+ggplot(club_tot,aes(reorder(To_Club,Total_Spending)))+
+  geom_col(aes(x=reorder(To_Club,Total_Spending) ,y=Total_Spending ,fill=To_Club))+
+  coord_flip()+
+  theme_economist()+
+  #scale_fill_manual(values = mycolors )+
+  #theme(plot.title = element_text("Total Club Spending From 2000-2021"))+ap
+  labs(title = "Total Club Spending On Record Fee Transfer From 2000-2021",
+       x = "Clubs",
+      y = "Total Spending In Euro Million",
+      caption = "Data From Kaggle Analysed By Fahd Using r (Data Science)")+
+  theme(axis.text.x = element_text( hjust = 1, size =8, angle = 90),
+       axis.title.x = element_text(size = 23),
+        axis.title.y = element_text(size = 16),
+        plot.title = element_text(hjust = 1), 
+       legend.position = "none",
+       plot.caption = element_text(size = 11,  hjust = 1))+ 
+  geom_label( aes(To_Club, Total_Spending,label= Total_Spending)) 
+  
+
+  #data = club_tot, aes(To_Club,Total_Spending,fill = "green")
+
+  #Barcelona has spend more money than other clubs in the transfer  market during the 2000-2021. Their total amount is 656.8(min)
+```
+#Top 10 most expensive player from 2000-2021
+
+```{r}
+view(data2)
+
+```
+
+
+
+
+
+```{r}
+top_player <- data2 %>%
+  select(Player,Year, Fee_Euro_mln)%>%
+  arrange(desc(Fee_Euro_mln))
+top_player
+
+
+```
+
+```{r}
+data2
+```
+
+
+```{r}
+Top_player <-top_player[1:10,] %>% 
+  ggplot(aes(Player,Fee_Euro_mln))+
+  geom_col(aes(reorder(x =Player,Fee_Euro_mln ), y = Fee_Euro_mln, fill=Player))+
+  coord_flip()+
+  theme_economist()+
+  labs(title = "Top 10 Most Expensive Players In 2000-2021", caption = "Data From Kaggle Analysed by Ope using r (Data Science)",
+       x = "Players",
+       y = "Fee_Mln_Euro")+
+  theme(plot.title = element_text(hjust = 0.5),
+          legend.position = "none",
+        axis.title.y = element_text(size = 18, color =  "Blue"),
+        axis.title.x = element_text(size = 18, color =  "Blue"),
+        plot.caption = element_text(size = 13, hjust = 1))+
+  geom_label(aes(Player,Fee_Euro_mln, label= Year))
+  
+
+ Top_player 
+
+#This are the 10 most expensive transaction made on a player from 2000-2021
+
+```
+
+
+
+```{r}
+Top_player
+```
+#Barcelona most expensive players 2000 - 2021
+  
+```{r}
+bar_players <- data2 %>%
+  select(Player, To_Club,Fee_Euro_mln, Position,Year ) %>% 
+  filter(To_Club == "Barcelona" ) %>% 
+  arrange(desc(Fee_Euro_mln)) %>%
+  
+  ggplot(aes(Player,Fee_Euro_mln))+
+  geom_col(aes(reorder(x =Player, Fee_Euro_mln), y= Fee_Euro_mln,fill= Position))+
+  theme_economist()+
+  labs(title = "Barcelona Most Expensive player 2000 - 2021", 
+       caption = "Data From Kaggle Analysed By Fahd Using r (Data Science)",
+       x = "Players",
+       y = "Fee_Mln_Euro")+
+  theme(plot.title =element_text(size = 21, hjust = 1.2),
+        axis.title.x = element_text(size = 18, color="green" ),
+        axis.title.y = element_text(size = 18, color = "green"),
+        plot.caption = element_text(size = 13, hjust =1))+
+        #legend.position  = "none")+
+        #axis.text.x = element_text(angle = 90, size= 10))+
+  coord_flip()+
+  geom_label(aes(Player,Fee_Euro_mln,label =Year ))
+  
+bar_players 
+
+# Data Shows 10 Most Expensive Signed Players From 2000_2021 In Barcelona Team
+
+
+```
+
+
+```{r}
+ real_Total <- data2 %>%
+  select(Player, To_Club, Fee_Euro_mln, Position,Year)%>%
+  filter( To_Club =="Real Madrid") %>%
+  arrange(desc(Fee_Euro_mln)) %>%
+  
+  ggplot(aes(Player, Fee_Euro_mln))+
+  geom_col(aes(reorder(Player,Fee_Euro_mln), y = Fee_Euro_mln, fill = Position))+
+   theme_economist()+
+  labs(title = "Real Madrid Most Expensive player 2000 - 2021", 
+       caption = "Data From Kaggle Analysed By Fahd Using r (Data Science)",
+       x = "Players",
+       y = "Fee_Mln_Euro")+
+  theme(plot.title =element_text(size = 21, hjust = 1.2),
+        axis.title.x = element_text(size = 21, color="Grey" ),
+        axis.title.y = element_text(size = 21, color = "Grey"),
+        plot.caption = element_text(size = 13, hjust =1))+ 
+        #legend.position  = "none")+
+        #axis.text.x = element_text(angle = 90, size= 10))+
+  coord_flip()+
+  geom_label(aes(Player,Fee_Euro_mln,label =Year ))
+  
+    #Data Shows 10 Most expensive signing in Real Madrid  Gareth Bale Make the all time record 2000-2021
+real_Total
+```
+
+```{r}
+
+mancity_Total <- data2 %>%
+  select(Player,To_Club,Position, Fee_Euro_mln,Year) %>%
+  filter(To_Club == "Manchester City") %>%
+  arrange(desc(Fee_Euro_mln)) %>%
+  
+  ggplot(aes(Player,Fee_Euro_mln))+
+  geom_col(aes(reorder(x=Player, Fee_Euro_mln), y =  Fee_Euro_mln, fill = Position))+
+   theme_economist()+
+  labs(title = "Manchester City Most Expensive player 2000 - 2021", 
+       caption = "Data From Kaggle Analysed By Fahd Using r (Data Science)",
+       x = "Players",
+       y = "Fee_Mln_Euro")+
+  theme(plot.title =element_text(size = 21, hjust = 0.9),
+        axis.title.x = element_text(size = 21, color="Red" ),
+        axis.title.y = element_text(size = 21, color = "Red"),
+        plot.caption = element_text(size = 13, hjust =1))+ 
+        #legend.position  = "none")+
+        #axis.text.x = element_text(angle = 90, size= 10))+
+  coord_flip()+
+  geom_label(aes(Player,Fee_Euro_mln,label =Year ))
+  
+ #Data Shows 10 Most Expensive Signing In Manchester City, Jack Grealish Making the all time record
+mancity_Total
+```
+
+
+```{r}
+psg_Total <- data2 %>% 
+  
+  select(Player, To_Club, Position, Fee_Euro_mln, Year)%>%
+  filter(To_Club == "Paris Saint-Germain") %>%
+  
+  ggplot(aes(Player,Fee_Euro_mln ))+
+  geom_col(aes(reorder(x =Player, -Fee_Euro_mln),y = Fee_Euro_mln, fill =Position ))+
+  theme_economist()+
+  labs(title = "Paris Saint-Germain  Most Expensive player 2000 - 2021", 
+       caption = "Data From Kaggle Analysed By Ope Using r (Data Science)",
+       x = "Players",
+       y = "Fee_Mln_Euro")+
+  theme(plot.title =element_text(size = 18, hjust = 0.9),
+        axis.title.x = element_text(size = 21, color="brown" ),
+        axis.title.y = element_text(size = 21, color = "brown"),
+        plot.caption = element_text(size = 13, hjust =1))+
+       # legend.position  =  )+
+        #axis.text.x = element_text(angle = 90, size= 10))+
+  #coord_flip()+
+  geom_label(aes(Player,Fee_Euro_mln,label =Year ))
+  
+  
+
+
+psg_Total
+```
+```{r}
+data2
+```
+
+
+```{r}
+
+Arsen_Total <- data2 %>% 
+  select(Player, To_Club, Position, Fee_Euro_mln, Year) %>% 
+  filter(To_Club == "Arsenal") %>% 
+  
+  ggplot(aes(Player, Fee_Euro_mln))+
+  geom_col(aes(fill =  Position))+
+   theme_economist()+
+  labs(title = "Arsenal Most Expensive player 2000 - 2021", 
+       caption = "Data From Kaggle Analysed By Ope Using r (Data Science)",
+       x = "Players",
+       y = "Fee_Mln_Euro")+
+  theme(plot.title =element_text(size = 21, hjust = 0.9),
+        axis.title.x = element_text(size = 21, color="purple" ),
+        axis.title.y = element_text(size = 21, color = "purple"),
+        plot.caption = element_text(size = 13, hjust =1))+ 
+        #legend.position  = "none")+
+        #axis.text.x = element_text(angle = 90, size= 10))+
+ # coord_flip()
+  geom_label(aes(Player,Fee_Euro_mln,label =  Year))
+
+Arsen_Total 
+
+```
+
+
+```{r}
+Countries_Data <- data2%>%
+  mutate(Countries =Origin ,
+           Countries = recode(Countries, Wakes = "Wales" )) %>%
+  select(Countries, Origin, Fee_Euro_mln) %>%
+  group_by(Countries) %>% 
+  summarise(Origin = n(), Total = sum(Fee_Euro_mln)) %>% 
+  arrange(desc(Total)) %>%
+  
+  ggplot(aes(Countries,  Total))+
+  geom_col(aes(reorder(x = Countries, Total), y = Total, fill =Countries ))+
+  theme_bw()+
+  labs(title = "List Of Club Record Fee Transfer By Origin Country 2000 - 2021", 
+       subtitle = "French player are the most demanded",
+       caption = "Data From Kaggle Analysed By Ope Using r (Data Science)",
+       x = "Countries",
+       y = "Fee_Mln_Euro")+
+  theme(plot.title =element_text(size = 16, hjust = 1.1),
+        axis.title.x = element_text(size = 21, color="Red" ),
+        axis.title.y = element_text(size = 21, color = "Red"),
+        plot.caption = element_text(size = 13, hjust =1),
+        legend.position  = "none",
+        axis.text.x = element_text(angle = 45, size= 10))+
+  coord_flip()+
+  geom_label(aes( Countries, Total,label =Origin ))
+  
+  
+ Countries_Data
+ 
+ #The French player are the most in demand in football sitting at the 1st Brazil is the second 
+```
+```{r}
+
+ Trans_Year <- data2 %>% 
+  mutate( "YEar" =Year ) %>% 
+  select(YEar, Year, Fee_Euro_mln)%>%
+  group_by(Year) %>% 
+  summarise(YEar = n(), Total = sum(Fee_Euro_mln))%>%
+  rename("Count"=YEar) %>% 
+  arrange(desc(Total))
+
+
+Trans_Year
+
+#The Table Below Show The Data Of Transfer Count Year Bases... We Have Come To The End Of The Report.
+```
+

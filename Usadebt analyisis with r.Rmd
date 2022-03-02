@@ -1,0 +1,1958 @@
+---
+title: "Usadataminning"
+author: "Ope"
+date: "9/12/2021"
+output: html_document
+---
+
+```{r}
+library(readxl)
+ usdebt <- read_excel("usdebt.csv")
+head(usdebt)
+```
+
+
+```{r}
+str(usdebt  )
+```
+```{r}
+dim(usdebt)
+```
+
+
+```{r}
+summary(usdebt)
+```
+```{r}
+colSums(is.na(usdebt))
+```
+```{r}
+library(dplyr)
+library(ggplot2)
+library(tidyverse)
+library(plotly)
+library(ggthemes)
+library(hrbrthemes)
+```
+
+
+```{r}
+data <- usdebt %>%
+  select(  "Calendar Month Number" , "Calendar Year" ,"Debt Held by the Public" , "Intragovernmental Holdings" , "Calendar Quarter Number" , "Fiscal Quarter Number" ,
+            "Calendar Year",  "Fiscal Year" ) %>%
+  rename(  "Calendar_Month_Number" = "Calendar Month Number" , 
+           "Calendar_Year" = "Calendar Year",
+           "Debt_Held_by_the_Public" = "Debt Held by the Public",
+           "Intragovernmental_Holdings" = "Intragovernmental Holdings",
+          "Fiscal_Year" = "Fiscal Year",
+          "Calendar_Quarter_Number" = "Calendar Quarter Number",
+          "Fiscal_Quarter_Number" = "Fiscal Quarter Number")
+data
+```
+```{r}
+
+data <- transform(data, months = month.abb[Calendar_Month_Number])
+data
+```
+
+
+```{r}
+dim(data)
+```
+#only 2016 calender year data are filtered out in this data
+```{r}
+calender16 <- data %>%
+  filter(Calendar_Year == 2016 
+         )
+calender16
+```
+#overall Summary of the data
+
+```{r}
+summary(calender16)
+```
+
+#This is the summary of debt accumulated By public in Calender Year 2016
+
+```{r}
+summary_1 <- calender16 %>%
+summarise(Total_Debt = sum(Debt_Held_by_the_Public), Highest_Debt = max(Debt_Held_by_the_Public), Lowest_Debt = min(Debt_Held_by_the_Public), Average_debt = mean(Debt_Held_by_the_Public))
+summary_1
+```
+#This is the summary of debt accumulated by Intragovernmental holding in Calender Year 2016
+
+```{r}
+summary_1 <- calender16 %>%
+summarise(Total_Debt = sum(Intragovernmental_Holdings), Highest_Debt = max(Intragovernmental_Holdings), Lowest_Debt = min(Intragovernmental_Holdings), Average_debt = mean(Intragovernmental_Holdings))
+summary_1
+```
+
+
+
+```{r}
+hist(calender16$Calendar_Month_Number, breaks = 2)
+```
+```{r}
+hist(calender16$Calendar_Quarter_Number, breaks = 2)
+```
+#Confirming the histogram chart for calender months
+```{r}
+sum(calender16$Calendar_Month_Number== 9)  
+sum(calender16$Calendar_Month_Number== 10)
+sum(calender16$Calendar_Month_Number== 11)
+sum(calender16$Calendar_Month_Number== 12)
+```
+#confirming the histogram chart for Calender quarter, Which illustrate the count of debt in ,3rd and 4th quaters in 2016
+```{r}
+sum(calender16$Calendar_Quarter_Number==3)
+sum(calender16$Calendar_Quarter_Number==4)
+```
+
+#This Chart shows the relationships or growth curve between the 2016 calender month and public debt
+```{r}
+ calender16 %>%
+  ggplot(aes(Calendar_Month_Number, Debt_Held_by_the_Public , col = Calendar_Month_Number ))+
+  geom_point( )+
+  geom_smooth(method = lm)+
+  labs(title = "Public Debt Growth Chart",
+       subtitle = "2016 Debt Analysis By Calender Month",
+       x = "Calender Months" ,
+       y = "Public Debt")+
+  theme(plot.title = element_text( size = 20, color = "Red", hjust = 0.5),
+        plot.subtitle = element_text(colour = "blue"),
+        axis.title.x = element_text(size =18, colour = "black"),
+        axis.title.y = element_text(size = 18 ),
+        legend.position = "none",
+        axis.text.x = element_text(colour = "blue"),
+        axis.text.y = element_text(colour = "blue"))
+  #show.legend = NA
+
+```
+
+#This Chart shows the relationships or growth curve between the 2016 calender month and Intrgovernmental Holding Debt
+```{r}
+ calender16 %>%
+  ggplot(aes(Calendar_Month_Number, Intragovernmental_Holdings , col = Calendar_Month_Number ))+
+  geom_point( )+
+  geom_smooth(method = lm)+
+  labs(title = "Intragovernmental Holdings Growth Chart",
+       subtitle = "2016 Debt Analysis By Calender Month",
+       x = "Calender Months" ,
+       y = "Intragovernmental Holdings")+
+  theme(plot.title = element_text( size = 20, color = "Red", hjust = 0.5),
+        plot.subtitle = element_text(colour = "blue"),
+        axis.title.x = element_text(size =18, colour = "black"),
+        axis.title.y = element_text(size = 18 ),
+        legend.position = "none",
+        axis.text.x = element_text(colour = "blue"),
+        axis.text.y = element_text(colour = "blue"))
+  #show.legend = NA
+```
+
+
+
+#Now let braek down the Public debt data for calender 2016 by 3 & 4 quarter then visualise the comparison growth
+
+```{r}
+Public_quarterly16 <- calender16 %>%
+  group_by(Calendar_Quarter_Number) %>%
+  summarise(Debt_Held_by_the_Public = sum(Debt_Held_by_the_Public))
+Public_quarterly16
+
+ggplot(Public_quarterly16 , aes( Calendar_Quarter_Number, Debt_Held_by_the_Public, fill =  Calendar_Quarter_Number))+
+  geom_col()+#aes(x = reorder(Calendar_Month_Number, Intragovernmental_Holdings), y = Intragovernmental_Holdings ))+
+  #coord_flip()+
+   theme_clean()+
+  labs(title = "quarterly public Debt in 2016",
+       subtitle = "2016 Debt Analysis By Calender Month",
+       caption = "Data analysed By Data Scientist OPE",
+       x = "2016 quater" ,
+       y = "Public Debt")+
+  theme(plot.title = element_text( size = 15, color = "green", hjust = 0.5),
+        plot.subtitle = element_text(colour = "blue"),
+        axis.title.x = element_text(size =18, colour = "black"),
+        axis.title.y = element_text(size = 18 ),
+        plot.caption = element_text(size = 15, colour = "grey"),
+        axis.text.x = element_text(colour = "blue"),
+        axis.text.y = element_text(colour = "blue"),
+       legend.position =  "none"
+       )+
+  geom_label(aes(Calendar_Quarter_Number, Debt_Held_by_the_Public, label =  Debt_Held_by_the_Public))
+  
+
+```
+#Now let braek down the Intragovermental Debt holding data for calender 2016 quarterly data then visualise the comparison growth
+
+
+```{r}
+Intragovernmenntal_quarterly16 <- calender16 %>%
+  group_by(Calendar_Quarter_Number) %>%
+  summarise(Intragovernmental_Holdings = sum(Intragovernmental_Holdings))
+Intragovernmenntal_quarterly16
+
+ggplot(Intragovernmenntal_quarterly16 , aes( Calendar_Quarter_Number,Intragovernmental_Holdings, fill =  Calendar_Quarter_Number))+
+  geom_col()+#aes(x = reorder(Calendar_Month_Number, Intragovernmental_Holdings), y = Intragovernmental_Holdings ))+
+  #coord_flip()+
+   theme_clean()+
+  labs(title = "quarterly Intragovernmental Holding in 2016",
+       subtitle = "2016 Debt Analysis By Calender Month",
+       caption = "Data Analysed By Data Scientist OPE",
+       x = "2016 quater" ,
+       y = "Intragovernment Holding")+
+  theme(plot.title = element_text( size = 15, color = "green", hjust = 0.5),
+        plot.subtitle = element_text(colour = "blue"),
+        axis.title.x = element_text(size =18, colour = "black"),
+        axis.title.y = element_text(size = 18 ),
+        plot.caption = element_text(size = 15, colour = "grey"),
+        axis.text.x = element_text(colour = "blue"),
+        axis.text.y = element_text(colour = "blue"),
+       legend.position =  "none"
+       )+
+ geom_label(aes(Calendar_Quarter_Number, Intragovernmental_Holdings, label =  Intragovernmental_Holdings))
+
+```
+#Monthly Debt growth comaparison chart for calender 2016
+
+
+```{r}
+monthly <- calender16%>%
+  group_by(months) %>%
+  summarise(Debt_Held_by_the_Public = sum(Debt_Held_by_the_Public)) %>%
+  arrange(desc(Debt_Held_by_the_Public))
+monthly
+
+p <- calender16 %>%
+  ggplot(aes(months, Debt_Held_by_the_Public, fill = months ))+
+   geom_col()+ #aes(x = reorder(Calendar_Month_Number, Debt_Held_by_the_Public), y = Debt_Held_by_the_Public))+
+  #coord_flip()+
+  theme_economist()+
+  labs(title = " Monthly Public Debt Growth Chart in 2016",    
+       subtitle = "2016 Debt Analysis By Calender Month",   
+       caption = "Data Analysed By Data Scientist OPE",
+       x = "Month" ,
+       y = "Public Debt")+
+  theme(plot.title = element_text( size = 20, color = "Black", hjust = 0.5),
+        plot.subtitle = element_text(colour = "blue"),
+        axis.title.x = element_text(size =18, colour = "black"),
+        axis.title.y = element_text(size = 18 ),
+        legend.position = "none",
+        axis.text.x = element_text(colour = "blue"),
+        axis.text.y = element_text(colour = "blue"))
+ggplotly( p , tooltip = "y")
+```
+
+
+```{r}
+monthly <- calender16%>%
+  group_by(months) %>%
+  summarise(Intragovernmental_Holdings = sum(Intragovernmental_Holdings)) %>%
+  arrange(desc(Intragovernmental_Holdings))
+monthly
+
+p <- calender16 %>%
+  ggplot(aes(months, Intragovernmental_Holdings, fill = months))+
+  geom_col()+#aes(x = reorder(Calendar_Month_Number, Intragovernmental_Holdings), y = Intragovernmental_Holdings ))+
+  #coord_flip()+
+  theme_economist()+
+  labs(title = "Monthly Intragovernmental Holdings Growth Chart in 2016",
+       subtitle = "2016 Debt Analysis By Calender Month",
+       x = "Month" ,
+       y = "Intragovernmental Holdings")+
+  theme(plot.title = element_text( size = 16, color = "Black", hjust = 0.4),
+        plot.subtitle = element_text(colour = "blue"),
+        axis.title.x = element_text(size =18, colour = "black"),
+        axis.title.y = element_text(size = 18 ),
+        legend.position = "none",
+        axis.text.x = element_text(colour = "blue"),
+        axis.text.y = element_text(colour = "blue"))
+ggplotly( p , tooltip = "y")
+```
+
+
+#only 2016 fiscal year data are filtered out in this data
+```{r}
+
+Fiscal16 <- data %>%
+  filter(Fiscal_Year == 2016 )
+Fiscal16
+  
+```
+
+```{r}
+summary(Fiscal16)
+```
+#This is the summary debt accumulated By the public in Fiscal Year 2016
+
+```{r}
+summary_3 <- Fiscal16 %>%
+  summarise(Total_Debt = sum(Debt_Held_by_the_Public), Highest_Debt = max(Debt_Held_by_the_Public), Loswest_Debt = min(Debt_Held_by_the_Public), Average_Debt = mean(Debt_Held_by_the_Public))
+summary_3
+
+```
+#Now let braek down the Public debt data for Fiscal Year  2016 by 4th quarter 
+```{r}
+PubliK_fiscal_quarterly16 <- Fiscal16 %>%
+  group_by(Fiscal_Quarter_Number) %>%
+  summarise(Debt_Held_by_the_Public = sum(Debt_Held_by_the_Public))
+PubliK_fiscal_quarterly16
+
+
+```
+#Now let braek down the Intragovenmental debt data for Fiscal Year  2016 by 4th quarter
+```{r}
+Intrgovenmental_fiscal_quarterly16 <- Fiscal16 %>%
+  group_by(Fiscal_Quarter_Number) %>%
+  summarise(Intragovernmental_Holdings = sum(Intragovernmental_Holdings))
+Intrgovenmental_fiscal_quarterly16
+```
+
+
+#Let go into 2017 Data #########################################################################
+
+
+
+
+
+
+
+```{r}
+calender17 <- data %>%
+  filter(Calendar_Year == 2017
+         )
+calender17
+```
+#overall Summary of the data
+```{r}
+summary(calender17)
+```
+
+#This is the summary of debt accumulated By public in Calender Year 2017
+
+```{r}
+summary_1_17 <- calender17 %>%
+summarise(Total_Debt = sum(Debt_Held_by_the_Public), Highest_Debt = max(Debt_Held_by_the_Public), Lowest_Debt = min(Debt_Held_by_the_Public), Average_debt = mean(Debt_Held_by_the_Public))
+summary_1_17
+```
+
+#This is the summary of debt accumulated by Intragovernmental holding in Calender Year 2017
+
+```{r}
+summary_2_17 <- calender17 %>%
+summarise(Total_Debt = sum(Intragovernmental_Holdings), Highest_Debt = max(Intragovernmental_Holdings), Lowest_Debt = min(Intragovernmental_Holdings), Average_debt = mean(Intragovernmental_Holdings))
+summary_2_17
+```
+
+#Histogram of calender month count
+```{r}
+hist(calender17$Calendar_Month_Number, breaks = 7)
+```
+```{r}
+hist(calender17$Calendar_Quarter_Number, breaks = 7)
+```
+
+#This Chart shows the relationships or growth curve between the 2017 calender month and public debt..
+
+```{r}
+calender17 %>%
+  ggplot(aes(Calendar_Month_Number, Debt_Held_by_the_Public , col = Calendar_Month_Number ))+
+  geom_point( )+
+  geom_smooth()+#method = lm)+
+
+  labs(title = "Public Debt Growth Chart",
+       subtitle = "2017 Debt Analysis By Calender Month",
+       x = "Calender Months" ,
+       y = "Public Debt")+
+  theme(plot.title = element_text( size = 20, color = "Red", hjust = 0.5),
+        plot.subtitle = element_text(colour = "blue"),
+        axis.title.x = element_text(size =18, colour = "black"),
+        axis.title.y = element_text(size = 18 ),
+        legend.position = "none",
+        axis.text.x = element_text(colour = "blue"),
+        axis.text.y = element_text(colour = "blue"))
+```
+
+
+#This Chart shows the relationships or growth curve between in 2017 calender month and Intrgovernmental Holding Debt
+```{r}
+calender17 %>%
+  ggplot(aes(Calendar_Month_Number, Intragovernmental_Holdings , col = Calendar_Month_Number ))+
+  geom_point( )+
+  geom_smooth(method = lm)+
+  labs(title = "Intragovernmental Holdings Growth Chart",
+       subtitle = "2017 Debt Analysis By Calender Month",
+       x = "Calender Months" ,
+       y = "Intragovernmental Holdings")+
+  theme(plot.title = element_text( size = 20, color = "Red", hjust = 0.5),
+        plot.subtitle = element_text(colour = "blue"),
+        axis.title.x = element_text(size =18, colour = "black"),
+        axis.title.y = element_text(size = 18 ),
+        legend.position = "none",
+        axis.text.x = element_text(colour = "blue"),
+        axis.text.y = element_text(colour = "blue"))
+  #show.legend = NA
+```
+
+#Now let braek down the Public debt data for calender 2017 quarter then visualise the comparison growth
+
+```{r}
+Public_quarterly17 <- calender17 %>%
+  group_by(Calendar_Quarter_Number_17 = Calendar_Quarter_Number) %>%
+  summarise(Debt_Held_by_the_Public_17 = sum(Debt_Held_by_the_Public))
+Public_quarterly17
+
+ggplot(Public_quarterly17 , aes( Calendar_Quarter_Number_17, Debt_Held_by_the_Public_17, fill =  Calendar_Quarter_Number_17))+
+  geom_col(aes(x = reorder(Calendar_Quarter_Number_17, Debt_Held_by_the_Public_17), y = Debt_Held_by_the_Public_17 ))+
+  #coord_flip()+
+   theme_clean()+
+  labs(title = "quarterly public Debt in 2017",
+       subtitle = "2017 Debt Analysis By Calender Month",
+       caption = "Data analysed By Data Scientist OPE",
+       x = "2017 quater" ,
+       y = "Public Debt")+
+  theme(plot.title = element_text( size = 15, color = "green", hjust = 0.5),
+        plot.subtitle = element_text(colour = "blue"),
+        axis.title.x = element_text(size =18, colour = "black"),
+        axis.title.y = element_text(size = 18 ),
+        plot.caption = element_text(size = 15, colour = "grey"),
+        axis.text.x = element_text(colour = "blue"),
+        axis.text.y = element_text(colour = "blue"),
+       legend.position =  "none"
+       )
+  #geom_label(aes(Calendar_Quarter_Number_17, Debt_Held_by_the_Public_17, label =  Debt_Held_by_the_Public_17))
+  
+
+```
+  
+#Now let braek down the Intragovermental Debt holding data for calender 2016 quarter data then visualise the comparison growth
+
+
+```{r}
+Intragovernmenntal_quarterly17 <- calender17 %>%
+  group_by(Calendar_Quarter_Number) %>%
+  summarise(Intragovernmental_Holdings = sum(Intragovernmental_Holdings))
+Intragovernmenntal_quarterly17
+
+ggplot(Intragovernmenntal_quarterly17 , aes( Calendar_Quarter_Number,Intragovernmental_Holdings, fill =  Calendar_Quarter_Number))+
+  geom_col(aes(x = reorder(Calendar_Quarter_Number, Intragovernmental_Holdings), y = Intragovernmental_Holdings ))+
+  #coord_flip()+
+   theme_clean()+
+  labs(title = "quarterly Intragovernmental Holding in 2017",
+       subtitle = "2017 Debt Analysis By Calender Month",
+       caption = "Data Analysed By Data Scientist OPE",
+       x = "2017 quater" ,
+       y = "Intragovernment Holding")+
+  theme(plot.title = element_text( size = 15, color = "green", hjust = 0.5),
+        plot.subtitle = element_text(colour = "blue"),
+        axis.title.x = element_text(size =18, colour = "black"),
+        axis.title.y = element_text(size = 18 ),
+        plot.caption = element_text(size = 15, colour = "grey"),
+        axis.text.x = element_text(colour = "blue"),
+        axis.text.y = element_text(colour = "blue"),
+       legend.position =  "none"
+       )
+# geom_label(aes(Calendar_Quarter_Number, Intragovernmental_Holdings, label =  Intragovernmental_Holdings))
+
+```
+
+
+#Monthly Public Debt growth comaparison chart for calender 2017
+```{r}
+monthly <- calender17 %>%
+  group_by(months)%>%
+  summarise(Debt_Held_by_the_Public = sum(Debt_Held_by_the_Public))%>%
+  arrange(desc(Debt_Held_by_the_Public))
+monthly
+  
+
+ p <-ggplot(monthly,aes(months, Debt_Held_by_the_Public))+
+  geom_col(aes(x = reorder(months, -Debt_Held_by_the_Public), y = Debt_Held_by_the_Public, fill = months))+
+  theme_economist()+
+  labs(title = " Monthly Public Debt Growth Chart in 2017",
+      caption = "Data Analysed By Data Scientist OPE",
+       x = "Month" ,
+       y = "Public Debt")+
+  theme(plot.title = element_text( size = 20, color = "Black", hjust = 0.5),
+        plot.subtitle = element_text(colour = "blue"),
+    axis.title.x = element_text(size =18, colour = "black"),
+       axis.title.y = element_text(size = 18 ),
+        legend.position = "none",
+        axis.text.x = element_text(colour = "blue"),
+        axis.text.y = element_text(colour = "blue"))
+ggplotly(p, y = tooltip)
+  
+
+```
+
+#Monthly Intrgovernmental Holding Debt growth comaparison chart for calender 2017
+```{r}
+monthly <- calender17 %>%
+  group_by(months)%>%
+  summarise(Intragovernmental_Holdings = sum(Intragovernmental_Holdings))%>%
+  arrange(desc(Intragovernmental_Holdings)) 
+monthly
+
+  p <- ggplot(monthly, aes(months, Debt_Held_by_the_Public))+
+  geom_col(aes(x = reorder(months, -Intragovernmental_Holdings), y = Intragovernmental_Holdings, fill = months))+
+  theme_economist()+
+  labs(title = " Monthly Public Debt Growth Chart in 2017",
+       subtitle = "2017 Debt Analysis By Calender Month",
+       caption = "Data Analysed By Data Scientist OPE",
+       x = "Month" ,
+       y = "Intragovenmental Holding")+
+  theme(plot.title = element_text( size = 20, color = "Black", hjust = 0.5),
+        plot.subtitle = element_text(colour = "blue"),
+        axis.title.x = element_text(size =18, colour = "black"),
+        axis.title.y = element_text(size = 18 ),
+        legend.position = "none",
+        axis.text.x = element_text(colour = "blue"),
+        axis.text.y = element_text(colour = "blue"))
+ggplotly(p, y = tooltip)
+  
+```
+
+
+
+#only 2017 fiscal year data are filtered out in this data
+```{r}
+
+Fiscal17 <- data %>%
+  filter(Fiscal_Year == 2017 )
+Fiscal17
+```
+
+```{r}
+summary(Fiscal17)
+```
+
+#This is the summary debt accumulated By the public in Fiscal Year 2017
+
+```{r}
+summary_3_17 <- Fiscal17 %>%
+  summarise(Total_Debt = sum(Debt_Held_by_the_Public), Highest_Debt = max(Debt_Held_by_the_Public), Loswest_Debt = min(Debt_Held_by_the_Public), Average_Debt = mean(Debt_Held_by_the_Public))
+summary_3_17
+
+```
+
+#This is the summary debt accumulated By the Intragovermental Holding in Fiscal Year 2017
+
+```{r}
+summary_4_17 <- Fiscal17 %>%
+  summarise(Total_Debt = sum(Intragovernmental_Holdings), Highest_Debt = max(Intragovernmental_Holdings), Loswest_Debt = min(Intragovernmental_Holdings), Average_Debt = mean(Intragovernmental_Holdings))
+summary_4_17
+
+```
+
+
+
+#Now let braek down the Public debt data for Fiscal Year  2017 by quarter 
+```{r}
+PubliK_fiscal_quarterly17 <- Fiscal17 %>%
+  group_by(Fiscal_Quarter_Number) %>%
+  summarise(Debt_Held_by_the_Public = sum(Debt_Held_by_the_Public))
+PubliK_fiscal_quarterly17
+
+ p <- ggplot(PubliK_fiscal_quarterly17, aes(Fiscal_Quarter_Number, Debt_Held_by_the_Public))+
+  geom_col(aes(x = reorder(Fiscal_Quarter_Number, -Debt_Held_by_the_Public), y = Debt_Held_by_the_Public, fill = Debt_Held_by_the_Public))+
+  theme_get()+
+  labs(title = " Quarterly Public Debt Growth Chart in 2017",
+       subtitle = "2017 Debt Analysis By Fiscal Year Quarter",
+       caption = "Data Analysed By Data Scientist OPE",
+       x = "Month" ,
+       y = "Intragovenmental Holding")+
+  theme(plot.title = element_text( size = 20, color = "Black", hjust = 0.5),
+        plot.subtitle = element_text(colour = "blue"),
+        plot.caption = element_text(size = 15, colour = "grey"),
+        axis.title.x = element_text(size =18, colour = "black"),
+        axis.title.y = element_text(size = 18 ),
+        legend.position = "none",
+        axis.text.x = element_text(colour = "blue"),
+        axis.text.y = element_text(colour = "blue"))+
+   geom_label(aes(Fiscal_Quarter_Number, Debt_Held_by_the_Public, label = Debt_Held_by_the_Public))
+ p
+
+```
+
+#Now let braek down the Intragovenmental debt data for 2017 Fiscal Year by quarter
+```{r}
+Intrgovenmental_fiscal_quarterly17 <- Fiscal17 %>%
+  group_by(Fiscal_Quarter_Number) %>%
+  summarise(Intragovernmental_Holdings = sum(Intragovernmental_Holdings))
+Intrgovenmental_fiscal_quarterly17
+
+ p <- ggplot(Intrgovenmental_fiscal_quarterly17, aes(Fiscal_Quarter_Number,Intragovernmental_Holdings ))+
+  geom_col(aes(x = reorder(Fiscal_Quarter_Number, -Intragovernmental_Holdings), y =Intragovernmental_Holdings, fill = Fiscal_Quarter_Number))+
+  theme_get()+
+  labs(title = " Quarterly Intragovernment Holding Growth Chart in 2017",
+       subtitle = "2017 Debt Analysis By Fiscal Year Quarter",
+       caption = "Data Analysed By Data Scientist OPE",
+       x = "Month" ,
+       y = "Intragovenmental Holding")+
+  theme(plot.title = element_text( size = 20, color = "Black", hjust = 0.9),
+        plot.subtitle = element_text(colour = "blue"),
+        plot.caption = element_text(size = 15, colour = "grey"),
+        axis.title.x = element_text(size =18, colour = "black"),
+        axis.title.y = element_text(size = 18 ),
+        legend.position = "none",
+        axis.text.x = element_text(colour = "blue"),
+        axis.text.y = element_text(colour = "blue"))+
+   geom_label(aes(Fiscal_Quarter_Number, Intragovernmental_Holdings, label = Intragovernmental_Holdings))
+ p
+
+```
+
+#Let go into 2018 Data #########################################################################
+
+
+
+
+```{r}
+calender18 <- data %>%
+  filter(Calendar_Year == 2018
+         )
+calender18
+```
+
+#overall Summary of the data
+```{r}
+summary(calender18)
+```
+
+#This is the summary of debt accumulated By public in Calender Year 2018
+
+```{r}
+summary_1_18 <- calender18 %>%
+summarise(Total_Debt = sum(Debt_Held_by_the_Public), Highest_Debt = max(Debt_Held_by_the_Public), Lowest_Debt = min(Debt_Held_by_the_Public), Average_debt = mean(Debt_Held_by_the_Public))
+summary_1_18
+```
+
+
+#This is the summary of debt accumulated by Intragovernmental holding in Calender Year 2018
+
+```{r}
+summary_2_18 <- calender18 %>%
+summarise(Total_Debt = sum(Intragovernmental_Holdings), Highest_Debt = max(Intragovernmental_Holdings), Lowest_Debt = min(Intragovernmental_Holdings), Average_debt = mean(Intragovernmental_Holdings))
+summary_2_18
+```
+
+#Histogram of calender month count
+```{r}
+hist(calender18$Calendar_Month_Number, breaks = 7)
+```
+
+```{r}
+hist(calender18$Calendar_Quarter_Number, breaks = 7)
+```
+
+#This Chart shows the relationships or growth curve between the 2018 calender month and public debt..
+
+```{r}
+calender18 %>%
+  ggplot(aes(Calendar_Month_Number, Debt_Held_by_the_Public , col = Calendar_Month_Number ))+
+  geom_point( )+
+  geom_smooth()+#method = lm)+
+
+  labs(title = "Public Debt Growth Chart",
+       subtitle = "2018 Debt Analysis By Calender Month",
+       x = "Calender Months" ,
+       y = "Public Debt")+
+  theme(plot.title = element_text( size = 20, color = "Red", hjust = 0.5),
+        plot.subtitle = element_text(colour = "blue"),
+        axis.title.x = element_text(size =18, colour = "black"),
+        axis.title.y = element_text(size = 18 ),
+        legend.position = "none",
+        axis.text.x = element_text(colour = "blue"),
+        axis.text.y = element_text(colour = "blue"))
+```
+
+#This Chart shows the relationships or growth curve between in 2018 calender month and Intrgovernmental Holding Debt
+```{r}
+calender18 %>%
+  ggplot(aes(Calendar_Month_Number, Intragovernmental_Holdings , col = Calendar_Month_Number ))+
+  geom_point( )+
+  geom_smooth(method = lm)+
+  labs(title = "Intragovernmental Holdings Growth Chart",
+       subtitle = "2018 Debt Analysis By Calender Month",
+       x = "Calender Months" ,
+       y = "Intragovernmental Holdings")+
+  theme(plot.title = element_text( size = 20, color = "Red", hjust = 0.5),
+        plot.subtitle = element_text(colour = "blue"),
+        axis.title.x = element_text(size =18, colour = "black"),
+        axis.title.y = element_text(size = 18 ),
+        legend.position = "none",
+        axis.text.x = element_text(colour = "blue"),
+        axis.text.y = element_text(colour = "blue"))
+  #show.legend = NA
+```
+
+#Now let braek down the Public debt data for calender 2017 quarter then visualise the comparison growth
+
+```{r}
+Public_quarterly18 <- calender18 %>%
+  group_by(Calendar_Quarter_Number = Calendar_Quarter_Number) %>%
+  summarise(Debt_Held_by_the_Public = sum(Debt_Held_by_the_Public))
+Public_quarterly18
+
+ggplot(Public_quarterly18 , aes( Calendar_Quarter_Number, Debt_Held_by_the_Public, fill =  Calendar_Quarter_Number))+
+  geom_col(aes(x = reorder(Calendar_Quarter_Number,-Debt_Held_by_the_Public ), y = Debt_Held_by_the_Public ))+
+  #coord_flip()+
+   theme_clean()+
+  labs(title = "quarterly public Debt in 2018",
+       subtitle = "2018 Debt Analysis By Calender Month",
+       caption = "Data analysed By Data Scientist OPE",
+       x = "2018 quater" ,
+       y = "Public Debt")+
+  theme(plot.title = element_text( size = 15, color = "green", hjust = 0.5),
+        plot.subtitle = element_text(colour = "blue"),
+        axis.title.x = element_text(size =18, colour = "black"),
+        axis.title.y = element_text(size = 18 ),
+        plot.caption = element_text(size = 15, colour = "grey"),
+        axis.text.x = element_text(colour = "blue"),
+        axis.text.y = element_text(colour = "blue"),
+       legend.position =  "none"
+       )
+ # geom_label(aes(Calendar_Quarter_Number, Debt_Held_by_the_Public, label =  Debt_Held_by_the_Public))
+  
+
+```
+
+
+#Now let braek down the Intragovermental Debt holding data for calender 2018 quarter data then visualise the comparison growth
+
+
+```{r}
+Intragovernmenntal_quarterly18 <- calender18 %>%
+  group_by(Calendar_Quarter_Number) %>%
+  summarise(Intragovernmental_Holdings = sum(Intragovernmental_Holdings))
+Intragovernmenntal_quarterly18
+
+ggplot(Intragovernmenntal_quarterly18 , aes( Calendar_Quarter_Number,Intragovernmental_Holdings, fill =  Calendar_Quarter_Number))+
+  geom_col(aes(x = reorder(Calendar_Quarter_Number, -Intragovernmental_Holdings), y = Intragovernmental_Holdings ))+
+  #coord_flip()+
+   theme_clean()+
+  labs(title = "quarterly Intragovernmental Holding in 2018",
+       subtitle = "2018 Debt Analysis By Calender Month",
+       caption = "Data Analysed By Data Scientist OPE",
+       x = "2018 quater" ,
+       y = "Intragovernment Holding")+
+  theme(plot.title = element_text( size = 15, color = "green", hjust = 0.5),
+        plot.subtitle = element_text(colour = "blue"),
+        axis.title.x = element_text(size =18, colour = "black"),
+        axis.title.y = element_text(size = 18 ),
+        plot.caption = element_text(size = 15, colour = "grey"),
+        axis.text.x = element_text(colour = "blue"),
+        axis.text.y = element_text(colour = "blue"),
+       legend.position =  "none"
+       )
+# geom_label(aes(Calendar_Quarter_Number, Intragovernmental_Holdings, label =  Intragovernmental_Holdings))
+
+```
+
+#Monthly Public Debt growth comaparison chart for calender 2018
+
+```{r}
+monthly <- calender18 %>%
+  group_by(months)%>%
+  summarise(Debt_Held_by_the_Public = sum(Debt_Held_by_the_Public))%>%
+  arrange(desc(Debt_Held_by_the_Public))
+monthly
+  
+
+ p <-ggplot(monthly,aes(months, Debt_Held_by_the_Public))+
+  geom_col(aes(x = reorder(months, -Debt_Held_by_the_Public), y = Debt_Held_by_the_Public, fill = months))+
+  theme_economist()+
+  labs(title = " Monthly Public Debt Growth Chart in 2018",
+      caption = "Data Analysed By Data Scientist OPE",
+       x = "Month" ,
+       y = "Public Debt")+
+  theme(plot.title = element_text( size = 20, color = "Black", hjust = 0.5),
+        plot.subtitle = element_text(colour = "blue"),
+    axis.title.x = element_text(size =18, colour = "black"),
+       axis.title.y = element_text(size = 18 ),
+        legend.position = "none",
+        axis.text.x = element_text(colour = "blue"),
+        axis.text.y = element_text(colour = "blue"))
+ggplotly(p, y = tooltip)
+  
+
+```
+
+#Monthly Intrgovernmental Holding Debt growth comaparison chart for calender 2018
+```{r}
+monthly <- calender18 %>%
+  group_by(months)%>%
+  summarise(Intragovernmental_Holdings = sum(Intragovernmental_Holdings))%>%
+  arrange(desc(Intragovernmental_Holdings)) 
+monthly
+
+  p <- ggplot(monthly, aes(months, Debt_Held_by_the_Public))+
+  geom_col(aes(x = reorder(months, -Intragovernmental_Holdings), y = Intragovernmental_Holdings, fill = months))+
+  theme_economist()+
+  labs(title = " Monthly Public Debt Growth Chart in 2018",
+       subtitle = "2017 Debt Analysis By Calender Month",
+       caption = "Data Analysed By Data Scientist OPE",
+       x = "Month" ,
+       y = "Intragovenmental Holding")+
+  theme(plot.title = element_text( size = 20, color = "Black", hjust = 0.5),
+        plot.subtitle = element_text(colour = "blue"),
+        axis.title.x = element_text(size =18, colour = "black"),
+        axis.title.y = element_text(size = 18 ),
+        legend.position = "none",
+        axis.text.x = element_text(colour = "blue"),
+        axis.text.y = element_text(colour = "blue"))
+ggplotly(p, y = tooltip)
+  
+```
+
+#only 2018 fiscal year data are filtered out in this data
+```{r}
+
+Fiscal18 <- data %>%
+  filter(Fiscal_Year == 2018 )
+Fiscal18
+```
+
+#overall Summary of the data
+```{r}
+summary(Fiscal18)
+```
+
+#This is the summary debt accumulated By the public in Fiscal Year 2018
+
+```{r}
+summary_3_18 <- Fiscal18 %>%
+  summarise(Total_Debt = sum(Debt_Held_by_the_Public), Highest_Debt = max(Debt_Held_by_the_Public), Loswest_Debt = min(Debt_Held_by_the_Public), Average_Debt = mean(Debt_Held_by_the_Public))
+summary_3_18
+
+```
+
+
+#This is the summary debt accumulated By the Intragovermental Holding in Fiscal Year 2018
+
+```{r}
+summary_4_18 <- Fiscal18 %>%
+  summarise(Total_Debt = sum(Intragovernmental_Holdings), Highest_Debt = max(Intragovernmental_Holdings), Loswest_Debt = min(Intragovernmental_Holdings), Average_Debt = mean(Intragovernmental_Holdings))
+summary_4_18
+
+```
+
+#Now let braek down the Public debt data for Fiscal Year  2018 by quarter 
+```{r}
+PubliK_fiscal_quarterly18 <- Fiscal18 %>%
+  group_by(Fiscal_Quarter_Number) %>%
+  summarise(Debt_Held_by_the_Public = sum(Debt_Held_by_the_Public))
+PubliK_fiscal_quarterly18
+
+ p <- ggplot(PubliK_fiscal_quarterly18, aes(Fiscal_Quarter_Number, Debt_Held_by_the_Public))+
+  geom_col(aes(x = reorder(Fiscal_Quarter_Number, -Debt_Held_by_the_Public), y = Debt_Held_by_the_Public, fill = Debt_Held_by_the_Public))+
+  theme_get()+
+  labs(title = " Quarterly Public Debt Growth Chart in 2018",
+       subtitle = "2018 Debt Analysis By Fiscal Year Quarter",
+       caption = "Data Analysed By Data Scientist OPE",
+       x = "Month" ,
+       y = "Intragovenmental Holding")+
+  theme(plot.title = element_text( size = 20, color = "Black", hjust = 0.5),
+        plot.subtitle = element_text(colour = "blue"),
+        plot.caption = element_text(size = 15, colour = "grey"),
+        axis.title.x = element_text(size =18, colour = "black"),
+        axis.title.y = element_text(size = 18 ),
+        legend.position = "none",
+        axis.text.x = element_text(colour = "blue"),
+        axis.text.y = element_text(colour = "blue"))
+   #geom_label(aes(Fiscal_Quarter_Number, Debt_Held_by_the_Public, label = Debt_Held_by_the_Public))
+ p
+
+```
+
+#Now let braek down the Intragovenmental debt data for 2018 Fiscal Year by quarter
+```{r}
+Intrgovenmental_fiscal_quarterly18 <- Fiscal18 %>%
+  group_by(Fiscal_Quarter_Number) %>%
+  summarise(Intragovernmental_Holdings = sum(Intragovernmental_Holdings))
+Intrgovenmental_fiscal_quarterly18
+
+ p <- ggplot(Intrgovenmental_fiscal_quarterly18, aes(Fiscal_Quarter_Number,Intragovernmental_Holdings ))+
+  geom_col(aes(x = reorder(Fiscal_Quarter_Number, -Intragovernmental_Holdings), y =Intragovernmental_Holdings, fill = Fiscal_Quarter_Number))+
+  theme_get()+
+  labs(title = " Quarterly Intragovernment Holding Growth Chart in 2018",
+       subtitle = "2018 Debt Analysis By Fiscal Year Quarter",
+       caption = "Data Analysed By Data Scientist OPE",
+       x = "Month" ,
+       y = "Intragovenmental Holding")+
+  theme(plot.title = element_text( size = 20, color = "Black", hjust = 0.9),
+        plot.subtitle = element_text(colour = "blue"),
+        plot.caption = element_text(size = 15, colour = "grey"),
+        axis.title.x = element_text(size =18, colour = "black"),
+        axis.title.y = element_text(size = 18 ),
+        legend.position = "none",
+        axis.text.x = element_text(colour = "blue"),
+        axis.text.y = element_text(colour = "blue"))
+  # geom_label(aes(Fiscal_Quarter_Number, Intragovernmental_Holdings, label = Intragovernmental_Holdings))
+ p
+
+```
+
+
+#Let go into 2019 Data #########################################################################
+
+
+
+
+```{r}
+calender19 <- data %>%
+  filter(Calendar_Year == 2019
+         )
+calender19
+```
+
+
+#overall Summary of the data
+```{r}
+summary(calender19)
+```
+
+#This is the summary of debt accumulated By public in Calender Year 2019
+
+```{r}
+summary_1_19 <- calender19%>%
+summarise(Total_Debt = sum(Debt_Held_by_the_Public), Highest_Debt = max(Debt_Held_by_the_Public), Lowest_Debt = min(Debt_Held_by_the_Public), Average_debt = mean(Debt_Held_by_the_Public))
+summary_1_19
+```
+
+#This is the summary of debt accumulated by Intragovernmental holding in Calender Year 2019
+
+```{r}
+summary_2_19 <- calender19 %>%
+summarise(Total_Debt = sum(Intragovernmental_Holdings), Highest_Debt = max(Intragovernmental_Holdings), Lowest_Debt = min(Intragovernmental_Holdings), Average_debt = mean(Intragovernmental_Holdings))
+summary_2_19
+```
+
+#Histogram of calender month count
+```{r}
+hist(calender19$Calendar_Month_Number, breaks = 7)
+```
+
+#Histogram of calender month count
+```{r}
+hist(calender19$Calendar_Quarter_Number, breaks = 7)
+```
+
+#This Chart shows the relationships or growth curve between the 2019 calender month and public debt..
+
+```{r}
+calender19 %>%
+  ggplot(aes(Calendar_Month_Number, Debt_Held_by_the_Public , col = Calendar_Month_Number ))+
+  geom_point( )+
+  geom_smooth()+#method = lm)+
+
+  labs(title = "Public Debt Growth Chart",
+       subtitle = "2019 Debt Analysis By Calender Month",
+       x = "Calender Months" ,
+       y = "Public Debt")+
+  theme(plot.title = element_text( size = 20, color = "Red", hjust = 0.5),
+        plot.subtitle = element_text(colour = "blue"),
+        axis.title.x = element_text(size =18, colour = "black"),
+        axis.title.y = element_text(size = 18 ),
+        legend.position = "none",
+        axis.text.x = element_text(colour = "blue"),
+        axis.text.y = element_text(colour = "blue"))
+```
+
+#This Chart shows the relationships or growth curve between in 2019 calender month and Intrgovernmental Holding Debt
+```{r}
+calender19 %>%
+  ggplot(aes(Calendar_Month_Number, Intragovernmental_Holdings , col = Calendar_Month_Number ))+
+  geom_point()+#aes(x = reorder(Calendar_Month_Number, Intragovernmental_Holdings), y = Intragovernmental_Holdings ))+
+  geom_smooth(method = lm)+
+  labs(title = "Intragovernmental Holdings Growth Chart",
+       subtitle = "2019 Debt Analysis By Calender Month",
+       x = "Calender Months" ,
+       y = "Intragovernmental Holdings")+
+  theme(plot.title = element_text( size = 20, color = "Red", hjust = 0.5),
+        plot.subtitle = element_text(colour = "blue"),
+        axis.title.x = element_text(size =18, colour = "black"),
+        axis.title.y = element_text(size = 18 ),
+        legend.position = "none",
+        axis.text.x = element_text(colour = "blue"),
+        axis.text.y = element_text(colour = "blue"))
+  #show.legend = NA
+```
+
+#Now let braek down the Public debt data for calender 2019 quarter then visualise the comparison growth
+
+```{r}
+Public_quarterly19 <- calender19 %>%
+  group_by(Calendar_Quarter_Number = Calendar_Quarter_Number) %>%
+  summarise(Debt_Held_by_the_Public = sum(Debt_Held_by_the_Public))
+Public_quarterly19
+
+ggplot(Public_quarterly19 , aes( Calendar_Quarter_Number, Debt_Held_by_the_Public, fill =  Calendar_Quarter_Number))+
+  geom_col(aes(x = reorder(Calendar_Quarter_Number,-Debt_Held_by_the_Public ), y = Debt_Held_by_the_Public ))+
+  #coord_flip()+
+   theme_clean()+
+  labs(title = "quarterly public Debt in 2019",
+       subtitle = "2019 Debt Analysis By Calender Month",
+       caption = "Data analysed By Data Scientist OPE",
+       x = "2019 quater" ,
+       y = "Public Debt")+
+  theme(plot.title = element_text( size = 15, color = "green", hjust = 0.5),
+        plot.subtitle = element_text(colour = "blue"),
+        axis.title.x = element_text(size =18, colour = "black"),
+        axis.title.y = element_text(size = 18 ),
+        plot.caption = element_text(size = 15, colour = "grey"),
+        axis.text.x = element_text(colour = "blue"),
+        axis.text.y = element_text(colour = "blue"),
+       legend.position =  "none"
+       )
+ # geom_label(aes(Calendar_Quarter_Number, Debt_Held_by_the_Public, label =  Debt_Held_by_the_Public))
+  
+
+```
+
+#Now let braek down the Intragovermental Debt holding data for calender 2019 quarter data then visualise the comparison growth
+
+
+```{r}
+Intragovernmenntal_quarterly19 <- calender19 %>%
+  group_by(Calendar_Quarter_Number) %>%
+  summarise(Intragovernmental_Holdings = sum(Intragovernmental_Holdings))
+Intragovernmenntal_quarterly19
+
+ggplot(Intragovernmenntal_quarterly19 , aes( Calendar_Quarter_Number,Intragovernmental_Holdings, fill =  Calendar_Quarter_Number))+
+  geom_col(aes(x = reorder(Calendar_Quarter_Number, -Intragovernmental_Holdings), y = Intragovernmental_Holdings ))+
+  #coord_flip()+
+   theme_clean()+
+  labs(title = "quarterly Intragovernmental Holding in 2019",
+       subtitle = "2019 Debt Analysis By Calender Month",
+       caption = "Data Analysed By Data Scientist OPE",
+       x = "2019 quater" ,
+       y = "Intragovernment Holding")+
+  theme(plot.title = element_text( size = 15, color = "green", hjust = 0.5),
+        plot.subtitle = element_text(colour = "blue"),
+        axis.title.x = element_text(size =18, colour = "black"),
+        axis.title.y = element_text(size = 18 ),
+        plot.caption = element_text(size = 15, colour = "grey"),
+        axis.text.x = element_text(colour = "blue"),
+        axis.text.y = element_text(colour = "blue"),
+       legend.position =  "none"
+       )
+# geom_label(aes(Calendar_Quarter_Number, Intragovernmental_Holdings, label =  Intragovernmental_Holdings))
+
+```
+
+#Monthly Public Debt growth comaparison chart for calender 2019
+
+```{r}
+monthly <- calender19 %>%
+  group_by(months)%>%
+  summarise(Debt_Held_by_the_Public = sum(Debt_Held_by_the_Public))%>%
+  arrange(desc(Debt_Held_by_the_Public))
+monthly
+  
+
+ p <-ggplot(monthly,aes(months, Debt_Held_by_the_Public))+
+  geom_col(aes(x = reorder(months, -Debt_Held_by_the_Public), y = Debt_Held_by_the_Public, fill = months))+
+  theme_economist()+
+  labs(title = " Monthly Public Debt Growth Chart in 2019",
+      caption = "Data Analysed By Data Scientist OPE",
+       x = "Month" ,
+       y = "Public Debt")+
+  theme(plot.title = element_text( size = 20, color = "Black", hjust = 0.5),
+        plot.subtitle = element_text(colour = "blue"),
+    axis.title.x = element_text(size =18, colour = "black"),
+       axis.title.y = element_text(size = 18 ),
+        legend.position = "none",
+        axis.text.x = element_text(colour = "blue"),
+        axis.text.y = element_text(colour = "blue"))
+ggplotly(p, y = tooltip)
+  
+
+```
+
+#Monthly Intrgovernmental Holding Debt growth comaparison chart for calender 2019
+```{r}
+monthly <- calender19 %>%
+  group_by(months)%>%
+  summarise(Intragovernmental_Holdings = sum(Intragovernmental_Holdings))%>%
+  arrange(desc(Intragovernmental_Holdings)) 
+monthly
+
+  p <- ggplot(monthly, aes(months, Debt_Held_by_the_Public))+
+  geom_col(aes(x = reorder(months, -Intragovernmental_Holdings), y = Intragovernmental_Holdings, fill = months))+
+  theme_economist()+
+  labs(title = " Monthly Intragovernmental Holdings Debt Growth Chart in 2019",
+       subtitle = "2017 Debt Analysis By Calender Month",
+       caption = "Data Analysed By Data Scientist OPE",
+       x = "Month" ,
+       y = "Intragovenmental Holding")+
+  theme(plot.title = element_text( size = 13, color = "Black", hjust = 0.5),
+        plot.subtitle = element_text(colour = "blue"),
+        axis.title.x = element_text(size =18, colour = "black"),
+        axis.title.y = element_text(size = 18 ),
+        legend.position = "none",
+        axis.text.x = element_text(colour = "blue"),
+        axis.text.y = element_text(colour = "blue"))
+ggplotly(p, y = tooltip)
+  
+```
+
+#only 2019 fiscal year data are filtered out in this data
+```{r}
+
+Fiscal19 <- data %>%
+  filter(Fiscal_Year == 2019 )
+Fiscal19
+```
+
+#overall Summary of the data
+```{r}
+summary(Fiscal19)
+```
+
+#This is the summary debt accumulated By the public in Fiscal Year 2019
+
+```{r}
+summary_3_19 <- Fiscal19 %>%
+  summarise(Total_Debt = sum(Debt_Held_by_the_Public), Highest_Debt = max(Debt_Held_by_the_Public), Loswest_Debt = min(Debt_Held_by_the_Public), Average_Debt = mean(Debt_Held_by_the_Public))
+summary_3_19
+
+```
+
+#This is the summary debt accumulated By the Intragovermental Holding in Fiscal Year 2019
+
+```{r}
+summary_4_19 <- Fiscal19 %>%
+  summarise(Total_Debt = sum(Intragovernmental_Holdings), Highest_Debt = max(Intragovernmental_Holdings), Loswest_Debt = min(Intragovernmental_Holdings), Average_Debt = mean(Intragovernmental_Holdings))
+summary_4_19
+
+```
+
+#Now let braek down the Public debt data for Fiscal Year 2019 by quarter 
+```{r}
+PubliK_fiscal_quarterly19 <- Fiscal19 %>%
+  group_by(Fiscal_Quarter_Number) %>%
+  summarise(Debt_Held_by_the_Public = sum(Debt_Held_by_the_Public))
+PubliK_fiscal_quarterly19
+
+ p <- ggplot(PubliK_fiscal_quarterly19, aes(Fiscal_Quarter_Number, Debt_Held_by_the_Public))+
+  geom_col(aes(x = reorder(Fiscal_Quarter_Number, -Debt_Held_by_the_Public), y = Debt_Held_by_the_Public, fill = Debt_Held_by_the_Public))+
+  theme_get()+
+  labs(title = " Quarterly Public Debt Growth Chart in 2019",
+       subtitle = "2019 Debt Analysis By Fiscal Year Quarter",
+       caption = "Data Analysed By Data Scientist OPE",
+       x = "Month" ,
+       y = "Intragovenmental Holding")+
+  theme(plot.title = element_text( size = 20, color = "Black", hjust = 0.5),
+        plot.subtitle = element_text(colour = "blue"),
+        plot.caption = element_text(size = 15, colour = "grey"),
+        axis.title.x = element_text(size =18, colour = "black"),
+        axis.title.y = element_text(size = 18 ),
+        legend.position = "none",
+        axis.text.x = element_text(colour = "blue"),
+        axis.text.y = element_text(colour = "blue"))
+   #geom_label(aes(Fiscal_Quarter_Number, Debt_Held_by_the_Public, label = Debt_Held_by_the_Public))
+ p
+
+```
+
+#Now let braek down the Intragovenmental debt data for 2019 Fiscal Year by quarter
+```{r}
+Intrgovenmental_fiscal_quarterly19 <- Fiscal19 %>%
+  group_by(Fiscal_Quarter_Number) %>%
+  summarise(Intragovernmental_Holdings = sum(Intragovernmental_Holdings))
+Intrgovenmental_fiscal_quarterly19
+
+ p <- ggplot(Intrgovenmental_fiscal_quarterly19, aes(Fiscal_Quarter_Number,Intragovernmental_Holdings ))+
+  geom_col(aes(x = reorder(Fiscal_Quarter_Number, -Intragovernmental_Holdings), y =Intragovernmental_Holdings, fill = Fiscal_Quarter_Number))+
+  theme_get()+
+   #coord_flip()+
+  labs(title = " Quarterly Intragovernment Holding Growth Chart in 2019",
+       subtitle = "2019 Debt Analysis By Fiscal Year Quarter",
+       caption = "Data Analysed By Data Scientist OPE",
+       x = "Month" ,
+       y = "Intragovenmental Holding")+
+  theme(plot.title = element_text( size = 20, color = "Black", hjust = 0.9),
+        plot.subtitle = element_text(colour = "blue"),
+        plot.caption = element_text(size = 15, colour = "grey"),
+        axis.title.x = element_text(size =18, colour = "black"),
+        axis.title.y = element_text(size = 18 ),
+        legend.position = "none",
+        axis.text.x = element_text(colour = "blue"),
+        axis.text.y = element_text(colour = "blue"))
+   #geom_label(aes(Fiscal_Quarter_Number, Intragovernmental_Holdings, label = Intragovernmental_Holdings))
+ p
+
+```
+
+
+
+
+#Let go into 2020 Data #########################################################################
+
+
+
+```{r}
+calender20 <- data %>%
+  filter(Calendar_Year == 2020
+         )
+calender20
+```
+
+#overall Summary of the data
+```{r}
+summary(calender20)
+```
+
+#This is the summary of debt accumulated By public in Calender Year 2020
+
+```{r}
+summary_1_20 <- calender20 %>%
+summarise(Total_Debt = sum(Debt_Held_by_the_Public), Highest_Debt = max(Debt_Held_by_the_Public), Lowest_Debt = min(Debt_Held_by_the_Public), Average_debt = mean(Debt_Held_by_the_Public))
+summary_1_20
+```
+
+#This is the summary of debt accumulated by Intragovernmental holding in Calender Year 2020
+
+```{r}
+summary_2_20 <- calender20 %>%
+summarise(Total_Debt = sum(Intragovernmental_Holdings), Highest_Debt = max(Intragovernmental_Holdings), Lowest_Debt = min(Intragovernmental_Holdings), Average_debt = mean(Intragovernmental_Holdings))
+summary_2_20
+```
+
+#Histogram for calender month count
+```{r}
+hist(calender20$Calendar_Month_Number, breaks = 7)
+```
+
+#Histogram for calender Quarter count
+```{r}
+hist(calender20$Calendar_Quarter_Number, breaks = 7)
+```
+
+#This Chart shows the relationships or growth curve between the 2020 calender month and public debt..
+
+```{r}
+calender20 %>%
+  ggplot(aes(Calendar_Month_Number, Debt_Held_by_the_Public , col = Calendar_Month_Number ))+
+  geom_point( )+
+  geom_smooth()+#method = lm)+
+
+  labs(title = "Public Debt Growth Chart",
+       subtitle = "2020 Debt Analysis By Calender Month",
+       x = "Calender Months" ,
+       y = "Public Debt")+
+  theme(plot.title = element_text( size = 20, color = "Red", hjust = 0.5),
+        plot.subtitle = element_text(colour = "blue"),
+        axis.title.x = element_text(size =18, colour = "black"),
+        axis.title.y = element_text(size = 18 ),
+        legend.position = "none",
+        axis.text.x = element_text(colour = "blue"),
+        axis.text.y = element_text(colour = "blue"))
+```
+
+#This Chart shows the relationships or growth curve between in 2020 calender month and Intrgovernmental Holding Debt
+```{r}
+calender20 %>%
+  ggplot(aes(Calendar_Month_Number, Intragovernmental_Holdings , col = Calendar_Month_Number ))+
+  geom_point()+#aes(x = reorder(Calendar_Month_Number, Intragovernmental_Holdings), y = Intragovernmental_Holdings ))+
+  geom_smooth(method = lm)+
+  labs(title = "Intragovernmental Holdings Growth Chart",
+       subtitle = "2020 Debt Analysis By Calender Month",
+       x = "Calender Months" ,
+       y = "Intragovernmental Holdings")+
+  theme(plot.title = element_text( size = 20, color = "Red", hjust = 0.5),
+        plot.subtitle = element_text(colour = "blue"),
+        axis.title.x = element_text(size =18, colour = "black"),
+        axis.title.y = element_text(size = 18 ),
+        legend.position = "none",
+        axis.text.x = element_text(colour = "blue"),
+        axis.text.y = element_text(colour = "blue"))
+  #show.legend = NA
+```
+
+
+#Now let braek down the Public debt data for calender 2020 quarter then visualise the comparison growth
+
+```{r}
+Public_quarterly20 <- calender20 %>%
+  group_by(Calendar_Quarter_Number = Calendar_Quarter_Number) %>%
+  summarise(Debt_Held_by_the_Public = sum(Debt_Held_by_the_Public))
+Public_quarterly20
+
+ggplot(Public_quarterly20 , aes( Calendar_Quarter_Number, Debt_Held_by_the_Public, fill =  Calendar_Quarter_Number))+
+  geom_col(aes(x = reorder(Calendar_Quarter_Number,-Debt_Held_by_the_Public ), y = Debt_Held_by_the_Public ))+
+  #coord_flip()+
+   theme_clean()+
+  labs(title = "quarterly public Debt in 2020",
+       subtitle = "2020 Debt Analysis By Calender Month",
+       caption = "Data analysed By Data Scientist OPE",
+       x = "2020 quater" ,
+       y = "Public Debt")+
+  theme(plot.title = element_text( size = 15, color = "green", hjust = 0.5),
+        plot.subtitle = element_text(colour = "blue"),
+        axis.title.x = element_text(size =18, colour = "black"),
+        axis.title.y = element_text(size = 18 ),
+        plot.caption = element_text(size = 15, colour = "grey"),
+        axis.text.x = element_text(colour = "blue"),
+        axis.text.y = element_text(colour = "blue"),
+       legend.position =  "none"
+       )
+ # geom_label(aes(Calendar_Quarter_Number, Debt_Held_by_the_Public, label =  Debt_Held_by_the_Public))
+  
+
+```
+
+#Now let braek down the Intragovermental Debt holding data for calender 2020 quarter data then visualise the comparison growth
+
+
+```{r}
+Intragovernmenntal_quarterly20 <- calender20 %>%
+  group_by(Calendar_Quarter_Number) %>%
+  summarise(Intragovernmental_Holdings = sum(Intragovernmental_Holdings))
+Intragovernmenntal_quarterly20
+
+ggplot(Intragovernmenntal_quarterly20 , aes( Calendar_Quarter_Number,Intragovernmental_Holdings, fill =  Calendar_Quarter_Number))+
+  geom_col(aes(x = reorder(Calendar_Quarter_Number, -Intragovernmental_Holdings), y = Intragovernmental_Holdings ))+
+  #coord_flip()+
+   theme_clean()+
+  labs(title = "quarterly Intragovernmental Holding in 2020",
+       subtitle = "2020 Debt Analysis By Calender Month",
+       caption = "Data Analysed By Data Scientist OPE",
+       x = "2020 quater" ,
+       y = "Intragovernment Holding")+
+  theme(plot.title = element_text( size = 15, color = "green", hjust = 0.5),
+        plot.subtitle = element_text(colour = "blue"),
+        axis.title.x = element_text(size =18, colour = "black"),
+        axis.title.y = element_text(size = 18 ),
+        plot.caption = element_text(size = 15, colour = "grey"),
+        axis.text.x = element_text(colour = "blue"),
+        axis.text.y = element_text(colour = "blue"),
+       legend.position =  "none"
+       )
+# geom_label(aes(Calendar_Quarter_Number, Intragovernmental_Holdings, label =  Intragovernmental_Holdings))
+
+```
+
+
+#Monthly Public Debt growth comaparison chart for calender 2020
+
+```{r}
+monthly <- calender20 %>%
+  group_by(months)%>%
+  summarise(Debt_Held_by_the_Public = sum(Debt_Held_by_the_Public))%>%
+  arrange(desc(Debt_Held_by_the_Public))
+monthly
+  
+
+ p <-ggplot(monthly,aes(months, Debt_Held_by_the_Public))+
+  geom_col(aes(x = reorder(months, -Debt_Held_by_the_Public), y = Debt_Held_by_the_Public, fill = months))+
+  theme_economist()+
+  labs(title = " Monthly Public Debt Growth Chart in 2020",
+      caption = "Data Analysed By Data Scientist OPE",
+       x = "Month" ,
+       y = "Public Debt")+
+  theme(plot.title = element_text( size = 20, color = "Black", hjust = 0.5),
+        plot.subtitle = element_text(colour = "blue"),
+    axis.title.x = element_text(size =18, colour = "black"),
+       axis.title.y = element_text(size = 18 ),
+        legend.position = "none",
+        axis.text.x = element_text(colour = "blue"),
+        axis.text.y = element_text(colour = "blue"))
+ggplotly(p, y = tooltip)
+  
+
+```
+
+```{r}
+n_distinct(calender20$months)
+```
+
+
+#Monthly Intrgovernmental Holding Debt growth comaparison chart for calender 2020
+```{r}
+monthly <- calender20 %>%
+  group_by(months)%>%
+  summarise(Intragovernmental_Holdings = sum(Intragovernmental_Holdings))%>%
+  arrange(desc(Intragovernmental_Holdings)) 
+monthly
+
+  p <- ggplot(monthly, aes(months, Debt_Held_by_the_Public))+
+  geom_col(aes(x = reorder(months, -Intragovernmental_Holdings), y = Intragovernmental_Holdings, fill = months))+
+  theme_economist()+
+  labs(title = " Monthly Intragovernmental Holdings Debt Growth Chart in 2020",
+       subtitle = "2017 Debt Analysis By Calender Month",
+       caption = "Data Analysed By Data Scientist OPE",
+       x = "Month" ,
+       y = "Intragovenmental Holding")+
+  theme(plot.title = element_text( size = 15, color = "Black", hjust = 0.5),
+        plot.subtitle = element_text(colour = "blue"),
+        axis.title.x = element_text(size =18, colour = "black"),
+        axis.title.y = element_text(size = 18 ),
+        legend.position = "none",
+        axis.text.x = element_text(colour = "blue"),
+        axis.text.y = element_text(colour = "blue"))
+ggplotly(p, y = tooltip)
+  
+```
+
+
+#only 2020 fiscal year data are filtered out in this data
+```{r}
+
+Fiscal20 <- data %>%
+  filter(Fiscal_Year == 2020 )
+Fiscal20
+```
+
+#overall Summary of the data
+```{r}
+summary(Fiscal20)
+```
+
+#This is the summary debt accumulated By the public in Fiscal Year 2020
+
+```{r}
+summary_3_20 <- Fiscal20 %>%
+  summarise(Total_Debt = sum(Debt_Held_by_the_Public), Highest_Debt = max(Debt_Held_by_the_Public), Loswest_Debt = min(Debt_Held_by_the_Public), Average_Debt = mean(Debt_Held_by_the_Public))
+summary_3_20
+
+```
+
+#This is the summary debt accumulated By the Intragovermental Holding in Fiscal Year 2020
+
+```{r}
+summary_4_20 <- Fiscal20 %>%
+  summarise(Total_Debt = sum(Intragovernmental_Holdings), Highest_Debt = max(Intragovernmental_Holdings), Loswest_Debt = min(Intragovernmental_Holdings), Average_Debt = mean(Intragovernmental_Holdings))
+summary_4_20
+
+```
+
+#Now let braek down the Public debt data for Fiscal Year 2020 by quarter 
+```{r}
+PubliK_fiscal_quarterly20 <- Fiscal20 %>%
+  group_by(Fiscal_Quarter_Number) %>%
+  summarise(Debt_Held_by_the_Public = sum(Debt_Held_by_the_Public))
+PubliK_fiscal_quarterly20
+
+ p <- ggplot(PubliK_fiscal_quarterly20, aes(Fiscal_Quarter_Number, Debt_Held_by_the_Public))+
+  geom_col(aes(x = reorder(Fiscal_Quarter_Number, -Debt_Held_by_the_Public), y = Debt_Held_by_the_Public, fill = Debt_Held_by_the_Public))+
+  theme_get()+
+  labs(title = " Quarterly Public Debt Growth Chart in 2020",
+       subtitle = "2020 Debt Analysis By Fiscal Year Quarter",
+       caption = "Data Analysed By Data Scientist OPE",
+       x = "Month" ,
+       y = "Intragovenmental Holding")+
+  theme(plot.title = element_text( size = 20, color = "Black", hjust = 0.5),
+        plot.subtitle = element_text(colour = "blue"),
+        plot.caption = element_text(size = 15, colour = "grey"),
+        axis.title.x = element_text(size =18, colour = "black"),
+        axis.title.y = element_text(size = 18 ),
+        legend.position = "none",
+        axis.text.x = element_text(colour = "blue"),
+        axis.text.y = element_text(colour = "blue"))
+   #geom_label(aes(Fiscal_Quarter_Number, Debt_Held_by_the_Public, label = Debt_Held_by_the_Public))
+ p
+
+```
+
+#Now let braek down the Intragovenmental debt data for 2020 Fiscal Year by quarter
+```{r}
+Intrgovenmental_fiscal_quarterly20 <- Fiscal20 %>%
+  group_by(Fiscal_Quarter_Number) %>%
+  summarise(Intragovernmental_Holdings = sum(Intragovernmental_Holdings))
+Intrgovenmental_fiscal_quarterly20
+
+ p <- ggplot(Intrgovenmental_fiscal_quarterly20, aes(Fiscal_Quarter_Number,Intragovernmental_Holdings ))+
+  geom_col(aes(x = reorder(Fiscal_Quarter_Number, -Intragovernmental_Holdings), y =Intragovernmental_Holdings, fill = Fiscal_Quarter_Number))+
+  theme_get()+
+   #coord_flip()+
+  labs(title = " Quarterly Intragovernment Holding Growth Chart in 2020",
+       subtitle = "2020 Debt Analysis By Fiscal Year Quarter",
+       caption = "Data Analysed By Data Scientist OPE",
+       x = "Month" ,
+       y = "Intragovenmental Holding")+
+  theme(plot.title = element_text( size = 20, color = "Black", hjust = 0.9),
+        plot.subtitle = element_text(colour = "blue"),
+        plot.caption = element_text(size = 15, colour = "grey"),
+        axis.title.x = element_text(size =18, colour = "black"),
+        axis.title.y = element_text(size = 18 ),
+        legend.position = "none",
+        axis.text.x = element_text(colour = "blue"),
+        axis.text.y = element_text(colour = "blue"))
+   #geom_label(aes(Fiscal_Quarter_Number, Intragovernmental_Holdings, label = Intragovernmental_Holdings))
+ p
+
+```
+
+#Let go into 2021 Data #########################################################################
+
+
+
+```{r}
+calender21 <- data %>%
+  filter(Calendar_Year == 2021
+         )
+calender21
+```
+
+#overall Summary of the data
+```{r}
+summary(calender20)
+```
+
+#This is the summary of debt accumulated By public in Calender Year 2021
+
+```{r}
+summary_1_21 <- calender21 %>%
+summarise(Total_Debt = sum(Debt_Held_by_the_Public), Highest_Debt = max(Debt_Held_by_the_Public), Lowest_Debt = min(Debt_Held_by_the_Public), Average_debt = mean(Debt_Held_by_the_Public))
+summary_1_21
+```
+
+#This is the summary of debt accumulated by Intragovernmental holding in Calender Year 2021
+
+```{r}
+summary_2_21 <- calender21 %>%
+summarise(Total_Debt = sum(Intragovernmental_Holdings), Highest_Debt = max(Intragovernmental_Holdings), Lowest_Debt = min(Intragovernmental_Holdings), Average_debt = mean(Intragovernmental_Holdings))
+summary_2_21
+```
+
+#Histogram for calender month count
+```{r}
+hist(calender21$Calendar_Month_Number, breaks = 7)
+```
+
+
+#Histogram for calender Quarter count
+```{r}
+hist(calender21$Calendar_Quarter_Number, breaks = 7)
+```
+
+#This Chart shows the relationships or growth curve between the 2021 calender month and public debt..
+
+```{r}
+calender21 %>%
+  ggplot(aes(Calendar_Month_Number, Debt_Held_by_the_Public , col = Calendar_Month_Number ))+
+  geom_point( )+
+  geom_smooth()+#method = lm)+
+
+  labs(title = "Public Debt Growth Chart",
+       subtitle = "2021 Debt Analysis By Calender Month",
+       x = "Calender Months" ,
+       y = "Public Debt")+
+  theme(plot.title = element_text( size = 20, color = "Red", hjust = 0.5),
+        plot.subtitle = element_text(colour = "blue"),
+        axis.title.x = element_text(size =18, colour = "black"),
+        axis.title.y = element_text(size = 18 ),
+        legend.position = "none",
+        axis.text.x = element_text(colour = "blue"),
+        axis.text.y = element_text(colour = "blue"))
+```
+
+#This Chart shows the relationships or growth curve between in 2021 calender month and Intrgovernmental Holding Debt
+```{r}
+calender21 %>%
+  ggplot(aes(Calendar_Month_Number, Intragovernmental_Holdings , col = Calendar_Month_Number ))+
+  geom_point()+#aes(x = reorder(Calendar_Month_Number, Intragovernmental_Holdings), y = Intragovernmental_Holdings ))+
+  geom_smooth(method = lm)+
+  labs(title = "Intragovernmental Holdings Growth Chart",
+       subtitle = "2021 Debt Analysis By Calender Month",
+       x = "Calender Months" ,
+       y = "Intragovernmental Holdings")+
+  theme(plot.title = element_text( size = 20, color = "Red", hjust = 0.5),
+        plot.subtitle = element_text(colour = "blue"),
+        axis.title.x = element_text(size =18, colour = "black"),
+        axis.title.y = element_text(size = 18 ),
+        legend.position = "none",
+        axis.text.x = element_text(colour = "blue"),
+        axis.text.y = element_text(colour = "blue"))
+  #show.legend = NA
+```
+
+#Now let braek down the Public debt data for calender 2021 quarter then visualise the comparison growth
+
+```{r}
+Public_quarterly21 <- calender21 %>%
+  group_by(Calendar_Quarter_Number = Calendar_Quarter_Number) %>%
+  summarise(Debt_Held_by_the_Public = sum(Debt_Held_by_the_Public))
+Public_quarterly21
+
+ggplot(Public_quarterly21 , aes( Calendar_Quarter_Number, Debt_Held_by_the_Public, fill =  Calendar_Quarter_Number))+
+  geom_col(aes(x = reorder(Calendar_Quarter_Number,-Debt_Held_by_the_Public ), y = Debt_Held_by_the_Public ))+
+  #coord_flip()+
+   theme_clean()+
+  labs(title = "quarterly public Debt in 2021",
+       subtitle = "2021 Debt Analysis By Calender Month",
+       caption = "Data analysed By Data Scientist OPE",
+       x = "2021 quater" ,
+       y = "Public Debt")+
+  theme(plot.title = element_text( size = 15, color = "green", hjust = 0.5),
+        plot.subtitle = element_text(colour = "blue"),
+        axis.title.x = element_text(size =18, colour = "black"),
+        axis.title.y = element_text(size = 18 ),
+        plot.caption = element_text(size = 15, colour = "grey"),
+        axis.text.x = element_text(colour = "blue"),
+        axis.text.y = element_text(colour = "blue"),
+       legend.position =  "none"
+       )
+ # geom_label(aes(Calendar_Quarter_Number, Debt_Held_by_the_Public, label =  Debt_Held_by_the_Public))
+  
+
+```
+
+#Now let braek down the Intragovermental Debt holding data for calender 2020 quarter data then visualise the comparison growth
+
+
+```{r}
+Intragovernmenntal_quarterly21 <- calender21 %>%
+  group_by(Calendar_Quarter_Number) %>%
+  summarise(Intragovernmental_Holdings = sum(Intragovernmental_Holdings))
+Intragovernmenntal_quarterly21
+
+ggplot(Intragovernmenntal_quarterly21 , aes( Calendar_Quarter_Number,Intragovernmental_Holdings, fill =  Calendar_Quarter_Number))+
+  geom_col(aes(x = reorder(Calendar_Quarter_Number, -Intragovernmental_Holdings), y = Intragovernmental_Holdings ))+
+  #coord_flip()+
+   theme_clean()+
+  labs(title = "quarterly Intragovernmental Holding in 2021",
+       subtitle = "2021 Debt Analysis By Calender Month",
+       caption = "Data Analysed By Data Scientist OPE",
+       x = "2021 quater" ,
+       y = "Intragovernment Holding")+
+  theme(plot.title = element_text( size = 15, color = "green", hjust = 0.5),
+        plot.subtitle = element_text(colour = "blue"),
+        axis.title.x = element_text(size =18, colour = "black"),
+        axis.title.y = element_text(size = 18 ),
+        plot.caption = element_text(size = 15, colour = "grey"),
+        axis.text.x = element_text(colour = "blue"),
+        axis.text.y = element_text(colour = "blue"),
+       legend.position =  "none"
+       )
+# geom_label(aes(Calendar_Quarter_Number, Intragovernmental_Holdings, label =  Intragovernmental_Holdings))
+
+```
+
+#Monthly Public Debt growth comaparison chart for calender 2020
+
+```{r}
+monthly <- calender21 %>%
+  group_by(months)%>%
+  summarise(Debt_Held_by_the_Public = sum(Debt_Held_by_the_Public))%>%
+  arrange(desc(Debt_Held_by_the_Public))
+monthly
+  
+
+ p <-ggplot(monthly,aes(months, Debt_Held_by_the_Public))+
+  geom_col(aes(x = reorder(months, -Debt_Held_by_the_Public), y = Debt_Held_by_the_Public, fill = months))+
+  theme_economist()+
+  labs(title = " Monthly Public Debt Growth Chart in 2021",
+      caption = "Data Analysed By Data Scientist OPE",
+       x = "Month" ,
+       y = "Public Debt")+
+  theme(plot.title = element_text( size = 20, color = "Black", hjust = 0.5),
+        plot.subtitle = element_text(colour = "blue"),
+    axis.title.x = element_text(size =18, colour = "black"),
+       axis.title.y = element_text(size = 18 ),
+        legend.position = "none",
+        axis.text.x = element_text(colour = "blue"),
+        axis.text.y = element_text(colour = "blue"))
+ggplotly(p, y = tooltip)
+  
+
+```
+
+
+#Monthly Intrgovernmental Holding Debt growth comaparison chart for calender 2021
+```{r}
+monthly <- calender21 %>%
+  group_by(months)%>%
+  summarise(Intragovernmental_Holdings = sum(Intragovernmental_Holdings))%>%
+  arrange(desc(Intragovernmental_Holdings)) 
+monthly
+
+  p <- ggplot(monthly, aes(months, Debt_Held_by_the_Public))+
+  geom_col(aes(x = reorder(months, -Intragovernmental_Holdings), y = Intragovernmental_Holdings, fill = months))+
+  theme_economist()+
+  labs(title = " Monthly Intragovernmental Holdings Debt Growth Chart in 2021",
+       subtitle = "2017 Debt Analysis By Calender Month",
+       caption = "Data Analysed By Data Scientist OPE",
+       x = "Month" ,
+       y = "Intragovenmental Holding")+
+  theme(plot.title = element_text( size = 15, color = "Black", hjust = 0.5),
+        plot.subtitle = element_text(colour = "blue"),
+        axis.title.x = element_text(size =18, colour = "black"),
+        axis.title.y = element_text(size = 18 ),
+        legend.position = "none",
+        axis.text.x = element_text(colour = "blue"),
+        axis.text.y = element_text(colour = "blue"))
+ggplotly(p, y = tooltip)
+  
+```
+
+#only 2021 fiscal year data are filtered out in this data
+```{r}
+
+Fiscal21 <- data %>%
+  filter(Fiscal_Year == 2021 )
+Fiscal21
+```
+
+#overall Summary of the data
+```{r}
+summary(Fiscal21)
+```
+
+#This is the summary debt accumulated By the public in Fiscal Year 2021
+
+```{r}
+summary_3_21 <- Fiscal21 %>%
+  summarise(Total_Debt = sum(Debt_Held_by_the_Public), Highest_Debt = max(Debt_Held_by_the_Public), Loswest_Debt = min(Debt_Held_by_the_Public), Average_Debt = mean(Debt_Held_by_the_Public))
+summary_3_21
+
+```
+
+#This is the summary debt accumulated By the Intragovermental Holding in Fiscal Year 2021
+
+```{r}
+summary_4_21 <- Fiscal21 %>%
+  summarise(Total_Debt = sum(Intragovernmental_Holdings), Highest_Debt = max(Intragovernmental_Holdings), Loswest_Debt = min(Intragovernmental_Holdings), Average_Debt = mean(Intragovernmental_Holdings))
+summary_4_21
+
+```
+
+#Now let braek down the Public debt data for Fiscal Year 2021 by quarter 
+```{r}
+PubliK_fiscal_quarterly21 <- Fiscal21 %>%
+  group_by(Fiscal_Quarter_Number) %>%
+  summarise(Debt_Held_by_the_Public = sum(Debt_Held_by_the_Public))
+PubliK_fiscal_quarterly21
+
+ p <- ggplot(PubliK_fiscal_quarterly21, aes(Fiscal_Quarter_Number, Debt_Held_by_the_Public))+
+  geom_col(aes(x = reorder(Fiscal_Quarter_Number, -Debt_Held_by_the_Public), y = Debt_Held_by_the_Public, fill = Debt_Held_by_the_Public))+
+  theme_get()+
+  labs(title = " Quarterly Public Debt Growth Chart in 2021",
+       subtitle = "2021 Debt Analysis By Fiscal Year Quarter",
+       caption = "Data Analysed By Data Scientist OPE",
+       x = "Month" ,
+       y = "Intragovenmental Holding")+
+  theme(plot.title = element_text( size = 20, color = "Black", hjust = 0.5),
+        plot.subtitle = element_text(colour = "blue"),
+        plot.caption = element_text(size = 15, colour = "grey"),
+        axis.title.x = element_text(size =18, colour = "black"),
+        axis.title.y = element_text(size = 18 ),
+        legend.position = "none",
+        axis.text.x = element_text(colour = "blue"),
+        axis.text.y = element_text(colour = "blue"))
+   #geom_label(aes(Fiscal_Quarter_Number, Debt_Held_by_the_Public, label = Debt_Held_by_the_Public))
+ p
+
+```
+
+#Now let braek down the Intragovenmental debt data for 2021 Fiscal Year by quarter
+```{r}
+Intrgovenmental_fiscal_quarterly21<- Fiscal21 %>%
+  group_by(Fiscal_Quarter_Number) %>%
+  summarise(Intragovernmental_Holdings = sum(Intragovernmental_Holdings))
+Intrgovenmental_fiscal_quarterly21
+
+ p <- ggplot(Intrgovenmental_fiscal_quarterly21, aes(Fiscal_Quarter_Number,Intragovernmental_Holdings ))+
+  geom_col(aes(x = reorder(Fiscal_Quarter_Number, -Intragovernmental_Holdings), y =Intragovernmental_Holdings, fill = Fiscal_Quarter_Number))+
+  theme_get()+
+   #coord_flip()+
+  labs(title = " Quarterly Intragovernment Holding Growth Chart in 2021",
+       subtitle = "2021 Debt Analysis By Fiscal Year Quarter",
+       caption = "Data Analysed By Data Scientist OPE",
+       x = "Month" ,
+       y = "Intragovenmental Holding")+
+  theme(plot.title = element_text( size = 20, color = "Black", hjust = 0.9),
+        plot.subtitle = element_text(colour = "blue"),
+        plot.caption = element_text(size = 15, colour = "grey"),
+        axis.title.x = element_text(size =18, colour = "black"),
+        axis.title.y = element_text(size = 18 ),
+        legend.position = "none",
+        axis.text.x = element_text(colour = "blue"),
+        axis.text.y = element_text(colour = "blue"))
+   #geom_label(aes(Fiscal_Quarter_Number, Intragovernmental_Holdings, label = Intragovernmental_Holdings))
+ p
+
+```
+#deep insight of debt growth based on aggregation through out the year
+#Growth coomparison of debt held by the public all through the years
+
+
+
+
+
+
+
+```{r}
+
+PublicDebt_growth <- data %>%
+  group_by(Calendar_Year) %>%
+  summarise(Debt_Held_by_the_Public = sum(Debt_Held_by_the_Public))
+PublicDebt_growth
+
+p <- ggplot(PublicDebt_growth, aes(Calendar_Year, Debt_Held_by_the_Public, fill = Calendar_Year))+
+  geom_col(aes(Calendar_Year))+#aes(x = reorder(Calendar_Year, -Debt_Held_by_the_Public), y =Debt_Held_by_the_Public, fill = Calendar_Year))+
+  theme_bw()+
+   #coord_flip()+
+  labs(title = "Yearly Public Debt Growth Comparison",
+       subtitle = "Yearly Growth Chart",
+       caption = "Data Analysed By Data Scientist OPE",
+       x = "Year" ,
+       y = "Public Debt")+
+  theme(plot.title = element_text( size = 20, color = "Black", hjust = 0.5),
+        plot.subtitle = element_text(colour = "blue"),
+        plot.caption = element_text(size = 15, colour = "grey"),
+        axis.title.x = element_text(size =18, colour = "black"),
+        axis.title.y = element_text(size = 18 ),
+        legend.position = "none",
+        axis.text.x = element_text(colour = "blue"),
+        axis.text.y = element_text(colour = "blue"))
+   #geom_label(aes(Calendar_Year, Debt_Held_by_the_Public, label =Debt_Held_by_the_Public ))
+ p
+```
+
+
+#Growth comparison of debt held Intragovenmental holding all through the years
+```{r}
+
+IntragoverDebt_Growth <- data %>%
+  group_by(Calendar_Year) %>%
+  summarise(Intragovernmental_Holdings = sum(Intragovernmental_Holdings))
+IntragoverDebt_Growth
+
+p <- ggplot(IntragoverDebt_Growth, aes(Calendar_Year, Intragovernmental_Holdings, fill =Intragovernmental_Holdings))+
+  geom_col(aes(Calendar_Year))+#aes(x = reorder(Calendar_Year, -Debt_Held_by_the_Public), y =Debt_Held_by_the_Public, fill = Calendar_Year))+
+  theme_bw()+
+   #coord_flip()+
+  labs(title = "Yearly Intragovernmental Debt Growth Comparison",
+       subtitle = "Yearly Growth Chart",
+       caption = "Data Analysed By Data Scientist OPE",
+       x = "Year" ,
+       y = "Public Debt")+
+  theme(plot.title = element_text( size = 20, color = "Black", hjust = 0.5),
+        plot.subtitle = element_text(colour = "blue"),
+        plot.caption = element_text(size = 15, colour = "grey"),
+        axis.title.x = element_text(size =18, colour = "black"),
+        axis.title.y = element_text(size = 18 ),
+        legend.position = "none",
+        axis.text.x = element_text(colour = "blue"),
+        axis.text.y = element_text(colour = "blue"))
+   #geom_label(aes(Calendar_Year, Intragovernmental_Holdings, label =Intragovernmental_Holdings ))
+ p
+```
+```{r}
+nb.cols <- 16
+mycolors <- colorRampPalette(brewer.pal (8,"Pastel1"))(nb.cols)
+nb.cols
+mycolors 
+```
+
+
+
+
+
+
+
+
+
+
+#Growth comparison of debt held By the Public Vs Intragovenmental holding all through the years
+```{r}
+
+PubvsIntra <- data %>%
+  group_by(Calendar_Year) %>%
+  summarise( Debt_Held_by_the_Public = sum(Debt_Held_by_the_Public), Intragovernmental_Holdings = sum(Intragovernmental_Holdings))
+PubvsIntra 
+
+ ggplot(PubvsIntra,aes(Calendar_Year, Debt_Held_by_the_Public))+
+  geom_line(colour ="blue", size = 1)+
+      geom_point(colour = "blue", size = 3)+
+  geom_line(aes(y = Intragovernmental_Holdings),colour = "green" ,size = 1)+
+      geom_point(aes( y = Intragovernmental_Holdings), colour = "green", size = 3)+
+  labs(title = "Debt Held By The Public Vs Intragovernmental Holdings",
+       subtitle = "Yearly Debt Comparison",
+       caption =  "Data Analysed By Data Scientist Ope",
+       x = "Year",
+       y = "Debt")+
+  theme_classic()+
+   theme(plot.title = element_text( size = 18, color = "Black", hjust = 0.5),
+        plot.subtitle = element_text(colour = "blue"),
+        plot.caption = element_text(size = 15, colour = "grey"),
+        axis.title.x = element_text(size =18, colour = "black"),
+        axis.title.y = element_text(size = 18 ),
+        legend.position = "none",
+        axis.text.x = element_text(colour = "blue"),
+        axis.text.y = element_text(colour = "blue"))
+  #scale_fill_manual(values = c(" B" ="#E6D8C0", "Debt_Held_by_the_Public" = "#FEE0AD") )
+
+
+
+
+
+```
+
+
+```{r}
+fiscalpubdebt_growth <- data %>%
+group_by(Fiscal_Year) %>%
+summarise(Debt_Held_by_the_Public = sum(Debt_Held_by_the_Public))
+fiscalpubdebt_growth
+
+p <- ggplot(fiscalpubdebt_growth, aes(Fiscal_Year, Debt_Held_by_the_Public, fill = Fiscal_Year))+
+  geom_col(aes(Fiscal_Year))+#aes(x = reorder(Calendar_Year, -Debt_Held_by_the_Public), y =Debt_Held_by_the_Public, fill = Calendar_Year))+
+  theme_bw()+
+   #coord_flip()+
+  labs(title = "Fiscal Yearly Public Debt Growth Comparison",
+       subtitle = "Yearly Growth Chart",
+       caption = "Data Analysed By Data Scientist OPE",
+       x = "Fiscal_Year" ,
+       y = "Public Debt")+
+  theme(plot.title = element_text( size = 20, color = "Black", hjust = 0.5),
+        plot.subtitle = element_text(colour = "blue"),
+        plot.caption = element_text(size = 15, colour = "grey"),
+        axis.title.x = element_text(size =18, colour = "black"),
+        axis.title.y = element_text(size = 18 ),
+        legend.position = "none",
+        axis.text.x = element_text(colour = "blue"),
+        axis.text.y = element_text(colour = "blue"))
+p
+
+```
+
+
+```{r}
+fiscalIntradebt_growth <- data %>%
+group_by(Fiscal_Year) %>%
+summarise(Intragovernmental_Holdings = sum(Intragovernmental_Holdings))
+fiscalIntradebt_growth
+
+p <- ggplot(fiscalIntradebt_growth, aes(Fiscal_Year, Intragovernmental_Holdings, fill = Fiscal_Year))+
+  geom_col(aes(Fiscal_Year))+#aes(x = reorder(Calendar_Year, -Debt_Held_by_the_Public), y =Debt_Held_by_the_Public, fill = Calendar_Year))+
+  theme_bw()+
+   #coord_flip()+
+  labs(title = "Fiscal Yearly Intragovernmental Debt Growth Comparison",
+       subtitle = "Yearly Growth Chart",
+       caption = "Data Analysed By Data Scientist OPE",
+       x = "Fiscal_Year" ,
+       y = "Public Debt")+
+  theme(plot.title = element_text( size = 18, color = "Black", hjust = 0.5),
+        plot.subtitle = element_text(colour = "blue"),
+        plot.caption = element_text(size = 15, colour = "grey"),
+        axis.title.x = element_text(size =18, colour = "black"),
+        axis.title.y = element_text(size = 18 ),
+        legend.position = "none",
+        axis.text.x = element_text(colour = "blue"),
+        axis.text.y = element_text(colour = "blue"))
+p
+
+```
+
+
+
+
+
+
+
+
+
+
+

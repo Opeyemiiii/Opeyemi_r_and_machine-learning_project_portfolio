@@ -1,0 +1,33 @@
+---
+title: "Wordcloud2"
+author: "Ope"
+date: "10/3/2021"
+output: html_document
+---
+```{r}
+library(readr)
+library(wordcloud2)
+library(dplyr)
+```
+
+```{r}
+word_csv <- read.csv("wordcloudpersonal.csv") 
+```
+```{r}
+library(readxl)
+ wordcloudpersonal <- read_excel("wordcloudpersonal.csv")
+View(wordcloudpersonal)
+ 
+```
+
+```{r}
+df = wordcloudpersonal
+df
+```
+```{r}
+wordcloud2(df,
+           color = rep_len( c("#fefefe", "yellow", "#030303" ), nrow(df)),
+           backgroundColor = "#00ccff"
+           )
+```
+

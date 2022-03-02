@@ -1,0 +1,266 @@
+---
+title: "Dashboard"
+author: "Ope"
+date: "7/7/2021"
+output: html_document
+---
+#step 1, Install library
+#step 2, start importing the library below
+
+
+```{r}
+getwd()
+```
+
+```{r}
+library(flexdashboard)
+library(ggplot2)
+library(readr)
+library(highcharter)
+library(dplyr)
+library(tidyverse)
+```
+
+
+
+#step 3, load the data set into r
+```{r}
+train <- read_csv('train.csv')
+head(train) #check the first six row
+```
+# Next function i wntb to use is str()
+i wanna check what databtype are the column
+```{r}
+str(train)#It is to check the data type
+```
+# Next tell r to cast the column called pclass as a factor(like a category class)
+
+
+
+
+```{r}
+train$Embarked <- factor(train$Embarked, labels = c("Cherbourg", "Queenstown", "Southampton"))
+str(train)
+```
+
+
+
+```{r}
+head(train)
+```
+
+
+
+#let check how many row we have on the data
+```{r}
+nrow(train)
+ncol(train)
+```
+
+
+
+```{r}
+data.frame(train)
+```
+
+
+
+
+```{r}
+str(train)
+```
+
+
+```{r}
+sum(train$Pclass == "1st")
+```
+
+
+```{r}
+trainn<-unlist(lapply(train, is.numeric))
+trainn
+```
+
+
+```{r}
+starwarss <- unlist(lapply(starwars, is.numeric))
+starwarss
+```
+
+```{r}
+head(starwars)
+```
+
+
+```{r}
+colSums(is.na(train))
+```
+
+
+
+
+```{r}
+head(train)
+```
+
+#A value box display a value (usually a number) in large text, with a smaller caption beaneath, and a large icon on the right side
+#this is the syntax for creating valuebox and case sensitive https://pkgs.rstudio.com
+#valueBox(value, caption = Null, icon = Null, color = Null, href = Null)
+```{r}
+valueBox(2222, icon = "fa-ship", color="rgb(100,100,100)")
+```
+##valuebox for percentage of survivors
+```{r}
+valueBox("31.6%", icon = "fa-heart", color = "200,100,100")
+```
+# To filter male
+```{r}
+tmp_males = train %>% filter(Sex =="male", !is.na(Age))
+tmp_males
+```
+
+
+```{r}
+unique(tmp_males$Sex)
+```
+
+
+
+```{r}
+rep(x, times=3) # Apply rep with each argument 
+
+```
+
+
+
+```{r}
+nrow(tmp_males)
+```
+
+
+```{r}
+rep(x, len = 7)
+```
+
+
+#lets filter the female passenger by their Age and put them in a frame
+```{r}
+df <- data.frame(Age=c(as.mid,b$mids),Density=c(a.density,b$density),Sex=c(rep("female",length(as.mids)),rep("male",length(as.mids))))
+df
+```
+
+
+
+```{r}
+tmp_male <- train %>%  filter(Sex=="male", !is.na(Age)) %>% select(Age) %>% .[[1]]
+
+b <- hist(tmp_male, 20, plot=TRUE)
+
+tmp_male
+```
+
+
+```{r}
+tmp_female <- train %>%  filter(Sex=="female", !is.na(Age)) %>% select(Age) %>% .[[1]]
+
+a <- hist(tmp_female, 20, plot = TRUE)
+
+tmp_female
+```
+
+
+
+
+```{r}
+df <- data.frame(Age=c(a$mids,b$mids),Density=c(a$density,b$density),Sex=c(rep("female",length(a$mids)),rep("male",length(b$mids))))
+
+df
+```
+
+
+
+
+```{r}
+Age = data.frame(train$Age)
+```
+
+
+
+
+
+
+
+```{r}
+tmp_male <- train %>%  filter(Sex=="male", !is.na(Age)) %>% select(Age) %>% .[[1]]
+
+b <- hist(tmp_male, 20, plot=FALSE)
+
+#filter out female
+tmp_female <- train %>%  filter(Sex=="female", !is.na(Age)) %>% select(Age) %>% .[[1]]
+
+a <- hist(tmp_female, breaks = b$breaks, plot=FALSE)
+
+df <- data.frame(Age=c(a$mids,b$mids),Density=c(a$density,b$density),Sex=c(rep("female",length(a$mids)),rep("male",length(b$mids))))
+
+highchart() %>% 
+  hc_add_series(name="female", select(filter(df,Sex=="female"),Density)[[1]], type="column", color='rgba(255, 192, 203, 0.30)', showInLegend=FALSE) %>% 
+  hc_add_series(name="male", select(filter(df,Sex=="male"),Density)[[1]], type="column", color='rgba(68, 170, 255, 0.30)', showInLegend=FALSE) %>% 
+  hc_add_series(name="male", select(filter(df,Sex=="male"),Density)[[1]], type="spline", color="#44AAFF") %>% 
+  hc_add_series(name="female", select(filter(df,Sex=="female"),Density)[[1]], type="spline", color="#FFC0Cb") %>% 
+hc_tooltip(pointFormat = "<span style=\"color:{series.color}\">{series.name}</span>:
+             {point.y:.3f}<br/>",
+             shared = FALSE) %>% 
+  hc_yAxis(title=list(text='Density')) %>% 
+  hc_xAxis(title=list(text='Age'))   
+```
+
+
+
+
+
+
+```{r}
+tmp <- train %>% filter(!(Embarked=="")) %>% group_by(Embarked) %>% tally() %>% mutate(Percent = n/sum(n))
+tmp$colors <- c("#d35400", "#2980b9", "#2ecc71")
+tmp <- arrange(tmp,desc(Percent))
+highchart() %>% 
+  hc_xAxis(categories = c("Southhampton", "Cherbourg", "Queenstown")) %>%
+  hc_yAxis(title=list(text='Percentage')) %>%
+  hc_add_series(tmp, "bar", hcaes(x = Embarked, y = Percent, color=colors)) %>% 
+  hc_tooltip(pointFormat = "{point.y:.2f}</br>",shared = FALSE) %>% 
+  hc_legend(enabled=FALSE)
+```
+
+
+
+```{r}
+tmp <- train %>% group_by(Pclass) %>% summarise(Survived = mean(Survived))
+tmp$colors <- c("#d35400", "#2980b9", "#2ecc71")
+hchart(tmp, "column", hcaes(x = Pclass, Y = Survived, color = colors)) %>%
+  hc_tooltip(pointFormat =  "{point.y:.2f}</br>",shared = FALSE)
+```
+
+
+```{r}
+tmp <- train %>%  group_by(Pclass) %>% summarize(Survived = mean(Survived))
+tmp$colors <- c("#d35400", "#2980b9", "#2ecc71")
+hchart(tmp, "column", hcaes(x = Pclass, y = Survived, color=colors)) %>% 
+    hc_tooltip(pointFormat = "{point.y:.2f}</br>",shared = FALSE)
+```
+
+
+
+
+```{r}
+rate <- 10
+gauge(rate, min = 0, max = 100, symbol = '%', gaugeSectors(success = c(80, 100), warning = c(40, 79), danger = c(0,39)))
+```
+
+
+
+```{r}
+rate <- 95
+gauge(rate, min = 0, max = 100, symbol = '%', gaugeSectors(
+  success = c(80, 100), warning = c(40, 79), danger = c(0, 39)
+))
+```

@@ -1,0 +1,57 @@
+---
+title: "Knn Marchine Learning"
+author: "Ope"
+date: "9/29/2021"
+output: html_document
+---
+
+
+```{r}
+
+iris
+```
+```{r}
+dim(iris)
+```
+
+
+```{r}
+train <- iris[1:129,]
+train
+```
+
+```{r}
+test <- iris[130:150,]
+test
+```
+```{r}
+Iris_ta <- iris
+```
+
+
+```{r}
+iris_train_target
+```
+
+
+
+```{r}
+library(class)
+```
+
+
+```{r}
+m <- knn(train[,-5], test[,-5], train$Species, k = 5)
+m
+```
+
+```{r}
+confusion <- table(m, test$Species)
+confusion
+```
+
+
+```{r}
+sum(diag(confusion))/nrow(test)
+```
+

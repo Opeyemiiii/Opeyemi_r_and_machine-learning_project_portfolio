@@ -1,0 +1,115 @@
+---
+title: "PipBulls Project"
+author: "Ope"
+date: "9/23/2021"
+output: html_document
+---
+
+
+```{r}
+library(readxl)
+pipbullfile <- read_excel("pipbullfile.csv")
+#View(pipbullfile)
+```
+
+
+```{r}
+library(scales)
+library(formattable)
+library(tidyverse)
+```
+
+```{r}
+head(pipbullfile)
+```
+
+```{r}
+transform( pipbullfile, percent(pipbullfile$Percentage))
+```
+
+```{r}
+data <- pipbullfile %>%
+  select(!"Time Sent") %>%
+  rename(Trade = "Trade Taken") %>%
+  rename(Pips = "profit/loss pips") %>%
+   
+  mutate(Percentage = percent(Percentage))
+data
+```
+
+```{r}
+data
+```
+```{r}
+library(ggplot2)
+library(ggthemes)
+```
+
+```{r}
+Ordered <-data %>%
+  group_by(Trade) %>%
+  summarise(Pips = sum(Pips))%>%
+  arrange(desc(Pips))
+Ordered
+
+
+```
+```{r}
+Top <- Ordered[2:11,]
+Top
+e = ggplot(Top, aes(Trade, Pips))+
+  geom_col(aes(reorder(Trade, Pips), Pips, fill = Trade))+
+  coord_flip()+
+  theme_economist()+
+  #scale_fill_manual(values = mycolors )+
+  labs(title = "Top Most Profitable Currency Pairs Based On Pips",
+       x = "Pairs",
+      y = "Pips",
+      caption = "#Pips Bulls #Data Science #r Programming #Ope" )+
+  theme(axis.text.x = element_text( hjust = 1, size =8),
+       axis.title.x = element_text(size = 23, color =  "red"),
+        axis.title.y = element_text(size = 16, color =  "Blue"),
+        plot.title = element_text(hjust = 0.5), 
+       legend.position = "none",
+       plot.caption = element_text(size = 11,  hjust = 1, color = "grey")
+      )
+  #geom_label( aes(To_Club, Total_Spending,label= Total_Spending)) 
+  
+e
+```
+
+```{r}
+Order <-data %>%
+  group_by(Trade) %>%
+  summarise(percentage = sum(Percentage))%>%
+  arrange(desc(percentage))
+Order
+
+```
+
+```{r}
+Top10 <- Order[2:11,]
+Top10
+
+C= ggplot(Top10, aes(Trade, percentage))+
+  geom_col(aes(reorder(Trade, -percentage), percentage, fill = Trade))+
+ # coord_flip()+
+  theme_economist()+
+  #scale_fill_manual(values = mycolors )+
+  labs(title = "Top Most Profitable Currency Pairs Based On Percentage",
+       x = "Pairs",
+      y = "Percentage",
+      caption = "#Pips Bulls #Data Science #r Programming #Ope" )+
+  theme(axis.text.x = element_text( hjust = 1, size =8),
+       axis.title.x = element_text(size = 23, color =  "red"),
+        axis.title.y = element_text(size = 16, color =  "Blue"),
+        plot.title = element_text(hjust = 0.5), 
+       legend.position = "none",
+       plot.caption = element_text(size = 11,  hjust = 1, color = "grey")
+      )+
+  geom_label( aes(Trade, percentage,label= percentage)) 
+  
+C
+
+```
+

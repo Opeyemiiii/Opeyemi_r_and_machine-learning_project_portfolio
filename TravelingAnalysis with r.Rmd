@@ -1,0 +1,247 @@
+---
+title: "Travel_Insurance Dataset"
+author: "Ope"
+date: "8/20/2021"
+output: html_document
+---
+
+   #Travel Insurance prediction Dataset
+   
+#Buisness task and stakeholders
+. The buisness task for this case study is to see what factor correlates with purchasing travel insurance and how to overcome this obstacle.
+
+.Stakeholders are airline x and the developers of the website to make the neccesary adjustments.
+
+
+#Set goals and questions for the case study 
+
+. Explore the dataset at hand
+.see what factor stand out in why customers do/do not purchase Travel Insurance
+.Set prediction using linear regression - TBD
+.Suggest how to overcome low purchase of Travel insurance
+
+
+#Data source usewd
+Data content; This data set contains information about different factors that can contribute to the purchasing travel insurance. This include age, salary, the amount of family member and travel history
+
+```{r}
+library(tidyverse)
+library(data.table)
+library(ggplot2)
+library(reprex)
+```
+
+
+```{r}
+?reprex
+```
+
+```{r}
+Travel_Insurance <- read.csv("TravelInsurancePrediction.csv")
+```
+
+
+#Preview data
+Here, we preview the data in R to see what we are working with
+
+```{r}
+head(Travel_Insurance)
+warning = FALSE
+```
+#Structure of my data
+Here we look at the structure of the data by using the following code 
+
+```{r}
+str(Travel_Insurance)
+```
+```{r}
+view(Travel_Insurance)
+```
+
+#Exploring the data_set
+
+Age
+Finding out the min and max of age's from the dataset and creating a graph showing AgeVpurchasing Travel Insurance
+
+```{r}
+AgeVInsurance <- Travel_Insurance %>%
+  ggplot(aes(Age, TravelInsurance))+
+  geom_bar(stat= "identity" , fill = "#85C1E9")+
+  labs(title= "AGE v TRAVEL INSURANCE", caption = "Data From Kagglel")+
+   theme(plot.title = element_text(hjust = 0),
+         axis.title.x = element_text(size = 23, color = "Black"),
+         axis.title.y = element_text(size = 23, color = "Green"),
+         axis.text.x = element_text(size = 13,color =  "Black"),
+         axis.text.y = element_text(size = 13, color = "Black"))
+
+ggplotly(AgeVInsurance, tooltip = "y")
+
+ 
+```
+
+
+```{r}
+AgenInsurance <- Travel_Insurance %>%
+  ggplot( aes(Age, TravelInsurance))+
+  geom_smooth(method = lm)+
+  labs(title = "Age V Travel Insurance", caption = "Data Collected by kaggle",
+       X = "Age",
+       Y = "Travelinsurance ")+
+theme(plot.title = element_text(hjust = 0.5, size = 23),  
+      axis.title.x = element_text( size = 23, color = "Green"),
+      axis.title.y = element_text( size =  23, color = "Black"),
+      axis.text.x  = element_text(size = 10, color ="Black"),
+      axis.text = element_text(size = 10, color = "Black"))
+AgenInsurance
+```
+
+
+```{r}
+unique(Travel_Insurance$TravelInsurance)
+unique(Travel_Insurance$Age)
+```
+Employment Type
+creating a graph showing Employment Type V Purchasing Travel Insurance
+
+
+```{r}
+ EmpnInsurance <- Travel_Insurance %>%
+  ggplot(aes(Employment.Type,TravelInsurance))+
+  geom_bar(stat = "identity", fill= "blue" )+
+  labs( title ="Employment.TypevTravelInsurance", subtitle = "Employments", caption =  "Data From Kaggle By Fahd" )+
+  theme_bw()+
+  theme(plot.title = element_text(hjust = 0.5, size = 22),
+        axis.title.x = element_text(size = 19, colour = "Green"),
+        axis.title.y = element_text(size = 19, color = "Black"),
+        axis.text.x = element_text(size = 12, colour = "Black"),
+        axis.text.y = element_text(size = 12, colour = "Black"),
+        axis.text.x.top = element_text(size = 23,colour = "Blue"))
+  
+  
+ ggploty( EmpnInsurance, tooltip = "y")
+
+
+```
+#Annual Income
+Creating a graph showing Annual Income V Purchasing Travel Insurance
+
+```{r}
+Travel_Insurance %>%
+  ggplot(aes(AnnualIncome,TravelInsurance))+
+  geom_smooth(method = lm)+
+  theme_classic()+
+  labs(title = "Annualinc V TravelInsurance", subtitle = "Annual Income", caption = "Data from Kaggle by  Ope" )+
+  theme(plot.title = element_text(hjust = 0.5, size = 20, colour = "Blue"),
+        axis.title.x = element_text(size = 18,colour = "Black"),
+        axis.title.y = element_text(size = 18, color = "Black"),
+        axis.text.x = element_text(size = 18, colour = "Black"),
+        axis.text.y = element_text(size = 18,colour = "Black"))
+
+
+```
+
+
+```{r}
+names(Travel_Insurance)
+```
+#Creating a graph showing how many people have chronic disease
+
+```{r}
+HCDisease <- Travel_Insurance %>%
+  ggplot(aes(ChronicDiseases))+
+    geom_histogram(binwidth = 1, fill= "#24E4F6")+
+  labs(title = "Histogram Of ChronicDisease", subtitle = "Disease", x = "Chronic Disease",
+       y ="frequency")+
+  theme_bw()+
+  theme(plot.title = element_text(size = 23, hjust = 0.5 ),
+        axis.title.x = element_text(size = 15, color = "Blue"),
+        axis.title.y  = element_text(size = 15, color = "Black"),
+        axis.text.x = element_text(size = 13, color =  "Black"),
+        axis.text.y = element_text(size = 13, color = "Black"))
+  
+ggplotly(HCDisease, tooltip = "x")
+
+```
+
+```{r}
+hist(Travel_Insurance$ChronicDiseases, breaks= 2, col = "#85C1E9")
+```
+
+#Creating a graph showing a frequent flying status v purchasing Travel Insurance
+
+```{r}
+freqflyer <- Travel_Insurance %>%
+  ggplot(aes(FrequentFlyer, TravelInsurance))+
+  geom_bar(stat = "Identity", fill= "#85C1E9")+
+  labs(title = "Frequent Flyer V TravelInsurance", subtitle = "frequentflyer", x = "FREQUENTFLYER",
+       y = "TRAVELINSURANCE")+
+  theme_bw()+
+  theme(plot.title = element_text(size = 23, colour = "black", hjust = 0.5),
+        axis.title.x = element_text(size =  15),
+          axis.title.y =  element_text(size = 15),
+        axis.text.x = element_text(size = 13, colour = "black"),
+        axis.text.y = element_text(size = 13, colour = "black"))
+
+ ggplotly(freqflyer, tooltip = "y")
+```
+
+#Creating a graph showing travelling abroad V purchasimg travel insurance
+
+```{r}
+ Travel_Insurance %>%
+  ggplot(aes(EverTravelledAbroad,TravelInsurance))+
+  geom_bar( stat = "identity", fill= "green" )+
+  labs( title = "Traveling Abroad", caption = "Kaggle Analysis By Fahd",
+        x = "Travelled Abroad",
+        y = "Travel Insurance")+
+  theme_bw()+
+  theme(plot.title = element_text(size = 23, hjust =  0.5),
+        axis.title.x = element_text(size = 18, colour = "grey"),
+        axis.title.y =  element_text(size = 18, color =  "Black"),
+        axis.text.y =   element_text(size = 13, colour = "black"),
+        axis.text.x =    element_text(size = 13, colour = "black"))
+```
+
+#Suggestions
+
+Based off the above findings, some solutions to advertise travel insurance to age group, big families, non frequent flayers and people who have not traveled internationally are
+
+- Advertise travel insurance when picking the flights domestically and internationally , and highlight all the advantages
+
+- Put savings of purchasing travel insurance when displaying options so families  can see how much they are saving.
+
+- put detailed information of what is included with travel insurance for the non frequent flyers so they understand what the importance
+
+-Reinforce travel insurance from the beginning to the end of  transaction to show importance.
+
+
+
+
+
+
+```{r}
+TI <- Travel_Insurance %>%
+  select( TravelInsurance)%>%
+  filter(TravelInsurance == "1") %>% 
+  summarise(TravelInsurance =n()) %>% 
+  rename("PresentCount" = "TravelInsurance")
+TI
+
+```
+
+
+```{r}
+TA <-nrow(Travel_Insurance)
+TA
+
+```
+
+```{r}
+total = do.call(rbind, Map(data.frame, TI = TI, TA =TA))
+total
+```
+
+```{r}
+total %>% mutate( PercentagCount = TI/TA*100)
+```
+

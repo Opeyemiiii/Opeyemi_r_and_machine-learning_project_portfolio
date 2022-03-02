@@ -1,0 +1,146 @@
+---
+title: "RandomForest"
+author: "Ope"
+date: "9/15/2021"
+output: html_document
+---
+
+```{r}
+library(randomForest)
+```
+```{r pressure, echo=FALSE, fig.cap= "A Caption", Out.width = '100%'}
+knitr::include_graphics("Original Data.png")
+
+```
+
+```{r}
+require(caTools)
+```
+
+```{r}
+library(caTools)
+```
+
+lets loads the raw data set
+```{r}
+data = read.csv("Clean Heart disease dataset.csv",
+header=TRUE
+)
+data
+```
+
+```{r}
+names(data)
+```
+
+```{r}
+unique(data$num)
+unique(data$ca)
+
+unique(data$thai)
+```
+#this function is just like if functioon in excel
+```{r}
+data$num[data$num > 1] = 1
+```
+
+
+```{r}
+library(skimr) #help you describe your data well statistically
+skim(data) %>%
+  tibble::as_tibble() #put in a table format
+```
+
+we can view type of each column by running the following command
+```{r}
+sapply(data, class)
+
+```
+
+```{r}
+data = transform(
+  
+  data,
+  age= as.integer(age),
+  sex= as.factor(sex),
+  cp=  as.factor(cp),
+  trestbps= as.integer(trestbps),
+  choi= as.integer(choi),
+  fbs= as.factor(fbs),
+  restecg= as.factor(restecg),
+  thalach= as.integer(thalach),
+  exang = as.factor(exang),
+  oldpeak= as.numeric(oldpeak),
+  slope= as.factor(slope),
+  ca= as.factor(ca),
+  thai= as.factor(thai),
+  num= as.factor(num)
+  
+)
+```
+
+check the data type once more
+```{r}
+sapply(data, class)
+```
+```{r}
+data[data == "?"] = NA
+```
+
+```{r}
+colSums(is.na(data))
+```
+
+```{r}
+data$thai[which(is.na(data$thai))] <- as.factor()
+
+```
+
+
+```{r}
+is.null(data)
+```
+#split data 75%
+```{r}
+sample = sample.split(data$num, SplitRatio = .90)
+sample
+```
+
+#and then take the sample and distribute for training and testing data
+```{r}
+train = subset(data, sample == TRUE)
+ncol(train)
+nrow(train)
+```
+
+#Testing data
+```{r}
+test = subset(data, sample == FALSE)
+nrow(test)
+ncol(test)
+```
+
+```{r}
+train
+```
+
+```{r}
+rf = randomForest(num ~., data = train)
+```
+
+
+
+```{r}
+rf
+```
+
+now let test
+```{r}
+pred <- predict(rf, newdata = test[-14])
+```
+
+```{r}
+confusion_matrix = table(test[,14], pred)
+confusion_matrix
+```
+

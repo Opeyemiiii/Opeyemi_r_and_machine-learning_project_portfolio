@@ -1,0 +1,141 @@
+---
+title: "whatappanalysis"
+author: "Ope"
+date: "9/1/2021"
+output: html_document
+---
+
+```{r}
+library(tidytext)
+library(textclean)
+library(wordcloud)
+library(dplyr)
+library(tidyverse)
+library(tidyr)
+library(readxl)
+library(RColorBrewer)
+library(extrafont)
+```
+
+```{r}
+library(readr)
+Whaty <- read_csv("Whaty.txt")
+#View(Whaty)
+```
+```{r}
+names(Whaty)
+```
+```{r}
+whats <- Whaty$`10:31 PM - Messages and calls are end-to-end encrypted. No one outside of this chat`
+head(whats)
+```
+```{r}
+whats  %>% 
+  str_to_lower() %>% #making word to lowercase
+  replace_contraction() %>% #replace contraction in long form
+  replace_word_elongation() %>%
+  strip()
+head(whats)
+```
+```{r}
+?co
+```
+
+```{r}
+x = c("Mr. Jones isnt't going",
+      "check it out what's going on",
+      "the robot at t.s wasn't nice",
+      "he would like it if i'd go away")
+replace_contraction(x)
+```
+
+
+```{r}
+x = c("Mr. Jones isnt't going",
+      "check it out what's going on",
+      "the robot at t.s wasn't nice",
+      "he would like it if i woulddddddd go away")
+replace_word_elongation(x)
+
+```
+
+
+```{r}
+ x = c('look', 'nooooooooooo!', ' real cooooool', "it's sooo gooooooood", 'fsdfds', 'fdddf', 
+       'as', "aaaahahahahahahaha", "aaabbccxcxxbbaaa", 'I said heyyy!', "I'm liiiike whyyyyy me?", "wwwwwhhatttttttt", NA)
+
+replace_word_elongation(x)
+#replace_word_elongation(x, impart.meaning = TRUE)
+```
+
+
+```{r}
+enframe(whats, value = "word", name = NULL) #converting vectors to dataframe and viceversal
+#whats <- as.data.frame(whats)
+```
+
+
+```{r}
+enframe(whats, value = "word", name = NULL) %>% 
+ unnest_tokens(word, word) %>% #This code seprate or split sentence into words each in row
+  count(word, sort = T) %>% 
+  anti_join(stop_words) #anti join compare two two table and extract data that does not match but it is doing in the particular code i still dont understand yet, i guess it is not that much necessary anyway
+
+```
+
+
+
+```{r}
+wor <- enframe(whats, value = "word", name = NULL) %>%
+  unnest_tokens(word, word)%>%
+  count(word, sort = T) %>%
+  anti_join(stop_words, by = c("word" = "word"))
+wor
+```
+```{r}
+?with
+```
+
+
+```{r}
+as.data.frame(wor) 
+```
+
+
+```{r}
+write.csv(wor, "wor.csv")
+```
+
+
+```{r}
+Wor <- read.csv("wor.csv")
+head(Wor)
+```
+
+```{r}
+Wor
+```
+```{r}
+fonts()
+```
+
+
+```{r} 
+#with all the data cleaning aspect done and transformed into a dataframe where it can be used for word cloud analysis we will procede and use the clean dataframe in the wordcloud codes
+Wor %>%
+  with(
+    wordcloud(
+      words = Wor$word,
+      freq =Wor$n ,
+      max.words = 125,
+      min.freq = 1,
+      rot.per = 0.7,
+      random.order = TRUE,
+      scale = c(6.5,0.8),
+      colors = brewer.pal(name = "Dark2", 8)
+    )
+  )
+```
+```{r}
+png("bor.png", width = 12, height = 8, units = 'in', res = 300)
+``` 

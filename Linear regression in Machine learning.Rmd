@@ -1,0 +1,183 @@
+---
+title: "Multiple Linear Regression"
+author: "Ope"
+date: "8/11/2021"
+output: html_document
+---
+
+
+
+#supervised learn model with linear Regression
+
+ -Baby Steps
+ 
+ Collecting the Data
+ Capturing the data in R
+ Checking for linearity
+ Applying the mutiple linear regression model
+ making a prediction
+ 
+ 'step  1: Collect the data
+ 
+ 
+ so lets with the simple exampke where the goal is to predict the stock index price (dependent Variable) of a ficitious economy based on two independent/input varibles;
+ 
+      'Interest_Rate - Independent Variable
+      'Unemployment_Rate - Independent Variable
+      'Depended Variable - Stock price is what we wish to predict
+      
+      
+  #Lets create a small data to use
+  
+```{r}
+Year <- c(2017, 2017, 2017, 2017, 2017,2017,2017,2017,2017,2017,2017,2017,2016,2016,2016,2016,2016,2016,2016,2016,2016,2016,2016,2016)
+
+length(Year)
+```
+
+
+  
+```{r}
+Month <- c(  12,11,10,9,8,7,6,5,4,3,2,1,12,11,10,9,8,7,6,5,4,3,2,1)
+length(Month)
+```
+```{r}
+Intrest_Rate <- c(2.75,2.5,2.5,2.5,2.5,2.5,2.5,2.25,2,25,2.25,2,2,2,1.75,1.75,1.75,1.75,1.75,1.75,1.75,1.75,1.75,1.75)
+
+length(Intrest_Rate)
+```
+#Assuming there are monthly data for unemployment rate
+
+```{r}
+Unemployment_Rate <- c(5.3,5.3,5.3,5.3,5.4,5.6,5.5,5.5,5.5,5.6,5.7,5.9,6,5.9,5.8,6.1,6.2,6.1,6.1,6.1,5.9,6.2,6.2,6.1)
+
+length(Unemployment_Rate)
+
+```
+#Lets assume these are our different stock price index data released by Jp Morgan Chase, its is one of the most large bank in US
+
+```{r}
+Stock_Idex_Price <- c(1464,1394,1357,1293,1256,1254,1234,1195,1159,1167,1130,1075,1047,965,943,958,971,949,884,866,876,822,704,719)
+
+length(Stock_Idex_Price)
+```
+```{r}
+getwd()
+```
+```{r}
+df = do.call(rbind, Map(data.frame, Year=Year, Month=Month, Unemployment_Rate= Unemployment_Rate, Stock_Idex_Price = Stock_Idex_Price, Intrest_Rate = Intrest_Rate))
+
+df
+```
+```{r}
+str(df)
+```
+```{r}
+dim(df)
+```
+```{r}
+nrow(df['Stock_Idex_Price'])
+```
+
+
+            'Step 3; Let's check for linearity'
+    Before you apply linear regression models, you'll need to verify that sevral assumption are met, Most notably you ll need to
+    
+    make sure that  linear relationship  exist between the dependent variable and the independent variable/s
+    
+    A quick way to check for linearity is by using scatter plots.
+    
+    For Our Example, we will need to check that a linear relationship exist between;
+    
+    The stock_Index_Price (dependent Variable) and the Intrest_rate (independent varoable ) and
+    
+    The Stock_Index_Price (dependent Variable) and the unemployment rate (independent Variable)
+    
+    
+```{r}
+max(df$Stock_Idex_Price)
+min(df$Stock_Idex_Price)
+```
+```{r}
+plot(x = Intrest_Rate, y = Stock_Idex_Price)
+```
+    
+```{r}
+library(ggplot2)
+
+ linear  <- ggplot(df, aes(x = Intrest_Rate, y = Stock_Idex_Price))+
+            geom_point(position = "jitter")
+        
+  linear      
+```
+```{r}
+write.csv(df,"linear reg.csv")
+```
+    
+    
+```{r}
+cor(Stock_Idex_Price,Intrest_Rate)
+```
+```{r}
+cor(Stock_Idex_Price,Unemployment_Rate)
+```
+    'Note you will notice that indeed a linear relationship exists between the stock_Index_Price and the Intrest_Rate, specifically, when intrest rate goes up, the stock index goes up as well'
+    
+    
+```{r}
+plot(x=Unemployment_Rate, y = Stock_Idex_Price)
+```
+                    Apply  the multiple linear in R
+                    
+```{r}
+#model = lm(Dependent Variable ~ First indepent variable + Second Independent model + ......)
+#summary(madel)
+```
+                    
+```{r}
+model = lm(Stock_Idex_Price ~ Intrest_Rate + Unemployment_Rate)
+summary(model)
+```
+    Y= M1X1 + M2X2 + ......C      
+    
+ 'You can use the coefficient in the summary in order to build the multiple linear regression equation as follows:
+ 
+ Stock_Index_Price = (Intercept) + (Intrest_Rate coef )*x2
+ 
+ 
+ X1 means the unknown intrest rate
+ x2 means unknown employment rate
+ 
+ And Once you plug the number from the summarry;
+ 
+ Stock_Index_Price = (1798.4) + (345.5)*X1 +  (-250.1)*X2`
+ 
+ 
+         'Step 5 Make a Predection
+         
+Now let make a prediction based on equation above
+
+For example, imagine that you want to predict the stock index price after  you collected the following data:
+
+
+
+        Intrest Rate = 1.5 (i.e., X1 = 1.5)
+        Unemployment Rate = 5.8(i.e., X2= 5.8)
+        
+And If You Plug that into regression equation you'll get:
+
+stock_Index_Price = (1798.4) + (345.5)*(1.5) +(-250.1)*(5.8 )= 866.07
+
+Y = c + m1x1 + m2x2
+
+Y = m1x1 + m2x2 +m3x3 +......
+
+```{r}
+Stock_Idex_Price = (1798.4) +  (345.5)*(1.5) + (-250.1)*(5.8)
+Stock_Idex_Price
+```
+
+
+The Predected stock value for the stock_Index_Price os therefore 886.07
+    
+    
